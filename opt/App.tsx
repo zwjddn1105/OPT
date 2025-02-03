@@ -1,17 +1,14 @@
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import Button from './components/Button';
+import { NavigationContainer } from '@react-navigation/native';
+import { BottomTabNavigator } from './navigation/BottomTabNavigator';
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>안녕 리액트 네이티브! 🚀</Text>
-      <Button 
-        title="클릭하세요!" 
-        onPress={() => alert('동작 확인!')} 
-      />
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <BottomTabNavigator />
+    </NavigationContainer>
   );
 }
 
