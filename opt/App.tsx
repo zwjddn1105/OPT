@@ -1,13 +1,18 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View } from 'react-native';
-import Button from './components/Button';
+import { StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { BottomTabNavigator } from './navigation/BottomTabNavigator';
+import KakaoLogin from './screens/LoginScreen';
+
+const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
     <NavigationContainer>
-      <BottomTabNavigator />
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Main" component={BottomTabNavigator} />
+        <Stack.Screen name="KakaoLogin" component={KakaoLogin} />
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

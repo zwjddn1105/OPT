@@ -1,6 +1,6 @@
 // navigation/BottomTabNavigator.tsx
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { HomeScreen } from '../screens/HomeScreen';
+import HomeScreen from '../screens/HomeScreen';
 import { CalendarScreen } from '../screens/CalendarScreen';
 import { ChallengeScreen } from '../screens/ChallengeScreen';
 import { ManageScreen } from '../screens/ManageScreen';
@@ -15,7 +15,7 @@ export const BottomTabNavigator = () => {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
-          let iconName: string;
+          let iconName: keyof typeof Ionicons.glyphMap = "home";
 
           if (route.name === '홈') {
             iconName = focused ? 'home' : 'home-outline';
