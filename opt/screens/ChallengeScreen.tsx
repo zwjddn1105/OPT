@@ -1,10 +1,9 @@
-// screens/SettingsScreen.tsx
 import { View, Text } from 'react-native';
 
-export const SettingsScreen = () => {
+export const ChallengeScreen = () => {
   return (
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>설정 화면 ⚙️</Text>
+      <Text>챌린지 화면 ⚙️</Text>
     </View>
   );
 };

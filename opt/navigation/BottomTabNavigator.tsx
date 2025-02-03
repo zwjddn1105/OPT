@@ -1,7 +1,10 @@
 // navigation/BottomTabNavigator.tsx
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { HomeScreen } from '../screens/HomeScreen';
-import { SettingsScreen } from '../screens/SettingsScreen';
+import { CalendarScreen } from '../screens/CalendarScreen';
+import { ChallengeScreen } from '../screens/ChallengeScreen';
+import { ManageScreen } from '../screens/ManageScreen';
+import { SearchScreen } from '../screens/SearchScreen';
 import { Ionicons } from '@expo/vector-icons'; // 아이콘 사용
 
 const Tab = createBottomTabNavigator();
@@ -10,19 +13,20 @@ export const BottomTabNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
+        headerShown: false,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: string;
 
           if (route.name === '홈') {
             iconName = focused ? 'home' : 'home-outline';
           } else if (route.name === '기록') {
-            iconName = focused ? 'settings' : 'settings-outline';
-          } else if (route.name === 'Settings') {
-            iconName = focused ? 'settings' : 'settings-outline';
-          } else if (route.name === 'Settings') {
-            iconName = focused ? 'settings' : 'settings-outline';
-          } else if (route.name === 'Settings') {
-            iconName = focused ? 'settings' : 'settings-outline'; ㅇㄴㅁㅁ
+            iconName = focused ? 'calendar' : 'calendar-outline';
+          } else if (route.name === '챌린지') {
+            iconName = focused ? 'trophy' : 'trophy-outline';
+          } else if (route.name === '관리') {
+            iconName = focused ? 'build' : 'build-outline';
+          } else if (route.name === '검색') {
+            iconName = focused ? 'search' : 'search-outline'; 
           }
 
           return <Ionicons name={iconName} size={size} color={color} />;
@@ -35,8 +39,10 @@ export const BottomTabNavigator = () => {
       })}
     >
       <Tab.Screen name="홈" component={HomeScreen} />
-      <Tab.Screen name="기록" component={SettingsScreen} />
-      <Tab.Screen name="ㅇㅇ" component={SettingsScreen} />
+      <Tab.Screen name="기록" component={CalendarScreen} />
+      <Tab.Screen name="챌린지" component={ChallengeScreen} />
+      <Tab.Screen name="관리" component={ManageScreen} />
+      <Tab.Screen name="검색" component={SearchScreen} />
     </Tab.Navigator>
   );
 };
