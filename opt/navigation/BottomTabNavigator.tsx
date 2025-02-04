@@ -1,11 +1,11 @@
 // navigation/BottomTabNavigator.tsx
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import HomeScreen from '../screens/HomeScreen';
-import { CalendarScreen } from '../screens/CalendarScreen';
+import CalendarScreen from '../screens/CalendarScreen';
 import { ChallengeScreen } from '../screens/ChallengeScreen';
 import { ManageScreen } from '../screens/ManageScreen';
 import { SearchScreen } from '../screens/SearchScreen';
-import { Ionicons } from '@expo/vector-icons'; // 아이콘 사용
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 
