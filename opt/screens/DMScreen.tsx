@@ -15,6 +15,7 @@ import { Ionicons } from "@expo/vector-icons";
 type RootStackParamList = {
   MainTabs: undefined;
   ManagerChat: undefined;
+  TrainerChat: undefined;
 };
 type NavigationProp = StackNavigationProp<RootStackParamList>;
 // 채팅방 데이터의 타입을 정의하는 인터페이스
@@ -53,7 +54,7 @@ export const DMScreen = () => {
     },
     {
       id: "2",
-      name: "천현우 트레이너",
+      name: "Trainer",
       lastMessage: "오늘 세트를 좀 많이 했던데데 짝짝...",
       time: "오후 1:28",
       profileImage: "트레이너프로필이미지경로",
@@ -83,6 +84,8 @@ export const DMScreen = () => {
       onPress={() => {
         if (item.name === "Manager") {
           navigation.navigate("ManagerChat");
+        } else if (item.name === "Trainer") {
+          navigation.navigate("TrainerChat");
         }
         // 다른 채팅방들의 네비게이션 처리
       }}
