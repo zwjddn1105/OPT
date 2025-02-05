@@ -7,3 +7,6 @@ npm install react-native-gesture-handler react-native-safe-area-context @react-n
 npm install @gorhom/bottom-sheet
 npm install @gorhom/bottom-sheet@latest
 npm install @gorhom/bottom-sheet react-native-reanimated react-native-gesture-handler
+
+혹시 버전관련 오류뜰 때
+npx expo install --fix

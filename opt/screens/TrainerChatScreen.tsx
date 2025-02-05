@@ -13,10 +13,6 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { StackNavigationProp } from "@react-navigation/stack";
-import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from "@gorhom/bottom-sheet";
 
 type RootStackParamList = {
   MainTabs: undefined;
@@ -40,13 +36,6 @@ interface Message {
 export const TrainerChatScreen = () => {
   const navigation = useNavigation<TrainerChatScreenNavigationProp>();
   const [message, setMessage] = useState("");
-  const [isBottomSheetVisible, setIsBottomSheetVisible] = useState(false);
-  const snapPoints = useMemo(() => ["25%"], []);
-  const bottomSheetRef = useRef<BottomSheetModal>(null);
-
-  const handlePlusButton = () => {
-    bottomSheetRef.current?.present();
-  };
 
   const messages: Message[] = [
     {
@@ -116,7 +105,6 @@ export const TrainerChatScreen = () => {
                 ? [styles.plusButton, styles.androidPlusButton]
                 : styles.plusButton
             }
-            onPress={handlePlusButton}
           >
             <Ionicons name="add" size={24} color="#666" />
           </TouchableOpacity>
@@ -136,35 +124,10 @@ export const TrainerChatScreen = () => {
           )}
         </View>
       </View>
-      <BottomSheetModal
-        ref={bottomSheetRef}
-        snapPoints={snapPoints}
-        enablePanDownToClose={true}
-        index={0}
-        onChange={(index) => {
-          setIsBottomSheetVisible(index === 0);
-        }}
-      >
-        <View style={styles.contentContainer}>
-          <View style={styles.optionsContainer}>
-            <TouchableOpacity style={styles.optionButton}>
-              <Ionicons name="image-outline" size={24} color="#666" />
-              <Text style={styles.optionText}>사진</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.optionButton}>
-              <Ionicons name="videocam-outline" size={24} color="#666" />
-              <Text style={styles.optionText}>동영상</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.optionButton}>
-              <Ionicons name="document-text-outline" size={24} color="#666" />
-              <Text style={styles.optionText}>기록 공유</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </BottomSheetModal>
     </KeyboardAvoidingView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -239,23 +202,6 @@ const styles = StyleSheet.create({
     borderTopColor: "#eee",
     padding: 10,
   },
-  optionsContainer: {
-    flexDirection: "row",
-    padding: 10,
-    backgroundColor: "#f5f5f5",
-    borderRadius: 8,
-    marginBottom: 8,
-    justifyContent: "space-around",
-  },
-  optionButton: {
-    alignItems: "center",
-    padding: 8,
-  },
-  optionText: {
-    fontSize: 12,
-    color: "#666",
-    marginTop: 4,
-  },
   plusButton: {
     padding: 8,
     marginRight: 4,
@@ -286,9 +232,5 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     fontSize: 14,
-  },
-  contentContainer: {
-    flex: 1,
-    alignItems: "center",
   },
 });
