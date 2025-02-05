@@ -7,6 +7,7 @@ import {
   Image,
   StyleSheet,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -18,31 +19,28 @@ type RootStackParamList = {
   TrainerChat: undefined;
   UserChat: undefined;
 };
+
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-// 채팅방 데이터의 타입을 정의하는 인터페이스
+
 interface ChatRoom {
-  id: string; // 채팅방 고유 식별자
-  name: string; // 채팅 상대방 이름
-  lastMessage: string; // 마지막 메시지 내용
-  time: string; // 마지막 메시지 시간
-  profileImage: string; // 프로필 이미지 URL
-  isPinned?: boolean; // 상단 고정 여부 (optional)
+  id: string;
+  name: string;
+  lastMessage: string;
+  time: string;
+  profileImage: string;
+  isPinned?: boolean;
+}
+
+interface Follower {
+  id: string;
+  name: string;
+  profileImage: string;
 }
 
 export const DMScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  // 검색어를 관리하는 상태
   const [searchQuery, setSearchQuery] = React.useState<string>("");
-
-  // TODO: 실제 구현 시에는 이 부분을 백엔드 API 호출로 대체해야 함
-  // 예시: const [chatRooms, setChatRooms] = React.useState<ChatRoom[]>([]);
-  // useEffect(() => {
-  //   const fetchChatRooms = async () => {
-  //     const response = await api.getChatRooms();
-  //     setChatRooms(response.data);
-  //   };
-  //   fetchChatRooms();
-  // }, []);
+  const [isFollowerListVisible, setFollowerListVisible] = React.useState(false);
 
   const chatRooms: ChatRoom[] = [
     {
@@ -71,15 +69,18 @@ export const DMScreen = () => {
     },
   ];
 
-  // 검색어에 따라 채팅방을 필터링하는 함수
+  const followers: Follower[] = [
+    { id: "1", name: "Follower1", profileImage: "팔로워1프로필이미지경로" },
+    { id: "2", name: "Follower2", profileImage: "팔로워2프로필이미지경로" },
+    { id: "3", name: "Follower3", profileImage: "팔로워3프로필이미지경로" },
+  ];
+
   const filteredChatRooms = chatRooms.filter(
     (room) =>
       room.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       room.lastMessage.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  // FlatList에서 각 채팅방을 렌더링하는 컴포넌트
-  // item 파라미터의 타입을 명시적으로 지정
   const renderChatRoom = ({ item }: { item: ChatRoom }) => (
     <TouchableOpacity
       onPress={() => {
@@ -90,7 +91,6 @@ export const DMScreen = () => {
         } else if (item.name === "User") {
           navigation.navigate("UserChat");
         }
-        // 다른 채팅방들의 네비게이션 처리
       }}
     >
       <View style={styles.chatRoomContainer}>
@@ -107,9 +107,22 @@ export const DMScreen = () => {
     </TouchableOpacity>
   );
 
+  const renderFollower = ({ item }: { item: Follower }) => (
+    <TouchableOpacity>
+      <View style={styles.chatRoomContainer}>
+        <Image
+          source={{ uri: item.profileImage }}
+          style={styles.profileImage}
+        />
+        <View style={styles.chatInfo}>
+          <Text style={styles.name}>{item.name}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
   return (
     <View style={styles.container}>
-      {/* 헤더 영역 */}
       <View style={styles.header}>
         <TouchableOpacity
           onPress={() => {
@@ -122,34 +135,50 @@ export const DMScreen = () => {
           <Ionicons name="chevron-back" size={24} color="black" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>nickname</Text>
+        <TouchableOpacity
+          onPress={() => setFollowerListVisible(!isFollowerListVisible)}
+          style={styles.addButton}
+        >
+          <Ionicons name="add" size={24} color="black" />
+        </TouchableOpacity>
       </View>
 
-      {/* 검색창 영역 */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputWrapper}>
-          <Ionicons
-            name="search-outline"
-            size={20}
-            color="#999"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="검색"
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
+      {isFollowerListVisible ? (
+        <View style={styles.contentContainer}>
+          <Text style={styles.sectionTitle}>팔로워</Text>
+          <FlatList
+            data={followers}
+            renderItem={renderFollower}
+            keyExtractor={(item) => item.id}
           />
         </View>
-      </View>
-      {/* 메시지 섹션 제목 */}
-      <Text style={styles.sectionTitle}>메시지</Text>
-      {/* 채팅방 목록 */}
-      <FlatList
-        data={filteredChatRooms}
-        renderItem={renderChatRoom}
-        keyExtractor={(item) => item.id}
-      />
+      ) : (
+        <View style={styles.contentContainer}>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInputWrapper}>
+              <Ionicons
+                name="search-outline"
+                size={20}
+                color="#999"
+                style={styles.searchIcon}
+              />
+              <TextInput
+                style={styles.searchInput}
+                placeholder="검색"
+                placeholderTextColor="#999"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+            </View>
+          </View>
+          <Text style={styles.sectionTitle}>메시지</Text>
+          <FlatList
+            data={filteredChatRooms}
+            renderItem={renderChatRoom}
+            keyExtractor={(item) => item.id}
+          />
+        </View>
+      )}
     </View>
   );
 };
@@ -159,12 +188,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
+  contentContainer: {
+    flex: 1,
+  },
   header: {
     flexDirection: "row",
     alignItems: "center",
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
+    justifyContent: "flex-start",
   },
   backButton: {
     marginRight: 8,
@@ -174,13 +207,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "bold",
   },
+  addButton: {
+    padding: 4,
+    marginLeft: "auto",
+  },
   searchContainer: {
     padding: 8,
   },
   searchInput: {
-    backgroundColor: "#f0f0f0",
+    flex: 1,
     padding: 8,
-    borderRadius: 8,
+    fontSize: 16,
   },
   searchInputWrapper: {
     flexDirection: "row",
@@ -198,7 +235,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
-
   chatRoomContainer: {
     flexDirection: "row",
     padding: 16,
@@ -210,7 +246,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#f0f0f0", // 이미지 로딩 전 배경색
+    backgroundColor: "#f0f0f0",
   },
   chatInfo: {
     flex: 1,
