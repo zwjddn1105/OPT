@@ -1,12 +1,11 @@
 // navigation/BottomTabNavigator.tsx
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { HomeScreen } from "../screens/HomeScreen";
-import { CalendarScreen } from "../screens/CalendarScreen";
-import { ChallengeScreen } from "../screens/ChallengeScreen";
-import { ManageScreen } from "../screens/ManageScreen";
-import { SearchScreen } from "../screens/SearchScreen";
-import { Ionicons } from "@expo/vector-icons"; // 아이콘 사용
-import { DMScreen } from "../screens/DMScreen";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import HomeScreen from '../screens/HomeScreen';
+import CalendarScreen from '../screens/CalendarScreen';
+import ChallengeScreen from '../screens/ChallengeScreen';
+import ManageScreen from '../screens/ManageScreen';
+import SearchScreen from '../screens/SearchScreen';
+import { Ionicons } from '@expo/vector-icons';
 
 const Tab = createBottomTabNavigator();
 
@@ -39,7 +38,7 @@ export const BottomTabNavigator = () => {
         tabBarIconStyle: { marginTop: 10 }, // 아이콘을 아래로 정렬
       })}
     >
-      <Tab.Screen name="홈" component={DMScreen} />
+      <Tab.Screen name="홈" component={HomeScreen} />
       <Tab.Screen name="기록" component={CalendarScreen} />
       <Tab.Screen name="챌린지" component={ChallengeScreen} />
       <Tab.Screen name="관리" component={ManageScreen} />
