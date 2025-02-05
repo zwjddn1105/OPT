@@ -1,8 +1,16 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Alert, TextInput } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
+
+interface FoodRecord {
+  id: string;
+  date: string;
+  calories: string;
+  imageUri: string | null;
+}
 
 type RootStackParamList = {
   Main: undefined;
@@ -17,6 +25,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'Food'>;
 const FoodScreen = ({ route, navigation }: Props) => {
   const { date } = route.params;
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [calories, setCalories] = useState('');
 
   const requestPermissions = async () => {
     const { status: cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
@@ -74,6 +83,26 @@ const FoodScreen = ({ route, navigation }: Props) => {
     }
   };
 
+  const handleSave = async () => {
+    try {
+      const record: FoodRecord = {
+        id: Date.now().toString(),
+        date,
+        calories,
+        imageUri: selectedImage,
+      };
+
+      const existingRecords = await AsyncStorage.getItem('foodRecords');
+      const records = existingRecords ? JSON.parse(existingRecords) : [];
+      records.push(record);
+
+      await AsyncStorage.setItem('foodRecords', JSON.stringify(records));
+      navigation.goBack();
+    } catch (error) {
+      Alert.alert('오류', '저장 중 문제가 발생했습니다.');
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -103,6 +132,24 @@ const FoodScreen = ({ route, navigation }: Props) => {
             <Text style={styles.placeholderText}>사진 추가하기</Text>
           </View>
         )}
+      </TouchableOpacity>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="칼로리를 입력하세요"
+          keyboardType="numeric"
+          value={calories}
+          onChangeText={setCalories}
+        />
+        <Text style={styles.unit}>kcal</Text>
+      </View>
+
+      <TouchableOpacity 
+        style={styles.saveButton}
+        onPress={handleSave}
+      >
+        <Text style={styles.saveButtonText}>저장</Text>
       </TouchableOpacity>
     </View>
   );
@@ -156,6 +203,40 @@ const styles = StyleSheet.create({
     marginTop: 10,
     color: '#666',
     fontSize: 16,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 20,
+    marginTop: 20,
+  },
+  input: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+    padding: 15,
+    borderRadius: 8,
+    fontSize: 16,
+  },
+  unit: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#666',
+  },
+  saveButton: {
+    backgroundColor: '#007AFF',
+    marginHorizontal: 20,
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+  },
+  saveButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 

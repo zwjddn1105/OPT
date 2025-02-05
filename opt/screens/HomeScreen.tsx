@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import SendButton from '../components/SendButton';
@@ -83,9 +83,52 @@ const TabButton: React.FC<TabButtonProps> = ({ title, isSelected, onPress }) => 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [selectedSpecialty, setSelectedSpecialty] = useState('다이어트');
-  const [selectedTab, setSelectedTab] = useState('nearby'); // 'nearby' | 'oneday'
+  const [selectedTab, setSelectedTab] = useState('nearby');
+  const [streak, setStreak] = useState(0);
+  const [weeklyWorkouts, setWeeklyWorkouts] = useState<string[]>([]);
 
   const specialties = ['다이어트', '빌크업', '필라테스', '체형교정'];
+
+  const calculateWorkoutStats = async () => {
+    try {
+      const records = await AsyncStorage.getItem('exerciseRecords');
+      if (!records) return;
+      
+      const exerciseRecords = JSON.parse(records);
+      const workoutDates = [...new Set(exerciseRecords.map((record: any) => record.date))].sort();
+      
+      // 연속 운동일수 계산
+      let currentStreak = 0;
+      const today = new Date().toISOString().split('T')[0];
+      const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+      
+      const startCheckingDate = workoutDates.includes(today) ? today : yesterday;
+      
+      for (let i = new Date(startCheckingDate); ; i.setDate(i.getDate() - 1)) {
+        const dateString = i.toISOString().split('T')[0];
+        if (!workoutDates.includes(dateString)) break;
+        currentStreak++;
+      }
+      
+      // 주간 운동 현황
+      const weeklyDates = [];
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(Date.now() - i * 86400000).toISOString().split('T')[0];
+        weeklyDates.push(date);
+      }
+      
+      setStreak(currentStreak);
+      setWeeklyWorkouts(weeklyDates.filter(date => workoutDates.includes(date)));
+    } catch (error) {
+      console.error('Failed to calculate workout stats:', error);
+    }
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      calculateWorkoutStats();
+    }, [])
+  );
 
   const handleProfilePress = async () => {
     const token = await AsyncStorage.getItem('userToken');
@@ -135,6 +178,35 @@ const HomeScreen: React.FC = () => {
       </View>
       
       <ScrollView style={styles.mainContent}>
+        <View style={styles.workoutStatsSection}>
+          <View style={styles.streakContainer}>
+            <Text style={styles.streakNumber}>{streak}</Text>
+            <Text style={styles.streakText}>일 연속 운동 중</Text>
+          </View>
+          <View style={styles.weeklyContainer}>
+            {Array.from({ length: 7 }).map((_, index) => {
+              const date = new Date();
+              date.setDate(date.getDate() - (6 - index));
+              const dateString = date.toISOString().split('T')[0];
+              const isWorkoutDay = weeklyWorkouts.includes(dateString);
+              const isToday = index === 6;
+              
+              return (
+                <View key={dateString} style={styles.dayContainer}>
+                  <Text style={styles.dayText}>
+                    {['일', '월', '화', '수', '목', '금', '토'][date.getDay()]}
+                  </Text>
+                  <View style={[
+                    styles.dayDot,
+                    isWorkoutDay && styles.workoutDot,
+                    isToday && styles.todayDot,
+                  ]} />
+                </View>
+              );
+            })}
+          </View>
+        </View>
+
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>진행중인 챌린지</Text>
           <ScrollView 
@@ -181,7 +253,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   section: {
-    marginTop: 80,
+    marginTop: 40,
   },
   topButtons: {
     position: 'absolute',
@@ -325,6 +397,56 @@ const styles = StyleSheet.create({
   },
   tabButtonTextSelected: {
     color: '#000',
+  },
+  workoutStatsSection: {
+    backgroundColor: '#f8f8f8',
+    padding: 20,
+    marginTop: 80,
+    marginHorizontal: 20,
+    borderRadius: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  streakContainer: {
+    alignItems: 'center',
+  },
+  streakNumber: {
+    fontSize: 32,
+    fontWeight: 'bold',
+  },
+  streakText: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 5,
+  },
+  weeklyContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  dayContainer: {
+    alignItems: 'center',
+    gap: 8,
+  },
+  dayText: {
+    fontSize: 12,
+    color: '#666',
+  },
+  dayDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ddd',
+  },
+  workoutDot: {
+    backgroundColor: '#007AFF',
+  },
+  todayDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: '#000',
   },
 });
 
