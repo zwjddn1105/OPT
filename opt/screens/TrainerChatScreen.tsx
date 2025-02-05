@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   MainTabs: undefined;
@@ -20,7 +20,7 @@ type RootStackParamList = {
   TrainerChat: undefined;
 };
 
-type TrainerChatScreenNavigationProp = StackNavigationProp<
+type TrainerChatScreenNavigationProp = NativeStackNavigationProp<
   RootStackParamList,
   "TrainerChat"
 >;
@@ -234,3 +234,5 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 });
+
+export default TrainerChatScreen;

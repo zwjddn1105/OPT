@@ -7,3 +7,5 @@ export const ManageScreen = () => {
     </View>
   );
 };
+
+export default ManageScreen;

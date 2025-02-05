@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 
 type RootStackParamList = {
@@ -17,7 +17,7 @@ type RootStackParamList = {
   ManagerChat: undefined;
   TrainerChat: undefined;
 };
-type NavigationProp = StackNavigationProp<RootStackParamList>;
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 // 채팅방 데이터의 타입을 정의하는 인터페이스
 interface ChatRoom {
   id: string; // 채팅방 고유 식별자
