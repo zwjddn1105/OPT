@@ -1,4 +1,4 @@
-import React, { useState, useRef, useMemo } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -12,7 +12,8 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import ChatActionModal from "../components/ChatActionModal";
 
 type RootStackParamList = {
   MainTabs: undefined;
@@ -36,7 +37,7 @@ interface Message {
 export const TrainerChatScreen = () => {
   const navigation = useNavigation<TrainerChatScreenNavigationProp>();
   const [message, setMessage] = useState("");
-
+  const [isActionModalVisible, setIsActionModalVisible] = useState(false);
   const messages: Message[] = [
     {
       id: "1",
@@ -105,6 +106,7 @@ export const TrainerChatScreen = () => {
                 ? [styles.plusButton, styles.androidPlusButton]
                 : styles.plusButton
             }
+            onPress={() => setIsActionModalVisible(true)}
           >
             <Ionicons name="add" size={24} color="#666" />
           </TouchableOpacity>
@@ -124,6 +126,10 @@ export const TrainerChatScreen = () => {
           )}
         </View>
       </View>
+      <ChatActionModal
+        visible={isActionModalVisible}
+        onClose={() => setIsActionModalVisible(false)}
+      />
     </KeyboardAvoidingView>
   );
 };
@@ -232,6 +238,19 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     fontSize: 14,
+  },
+  modalView: {
+    ...Platform.select({
+      ios: {
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: -3 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 10,
+      },
+    }),
   },
 });
 
