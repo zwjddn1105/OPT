@@ -16,6 +16,7 @@ type RootStackParamList = {
   MainTabs: undefined;
   ManagerChat: undefined;
   TrainerChat: undefined;
+  UserChat: undefined;
 };
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 // 채팅방 데이터의 타입을 정의하는 인터페이스
@@ -62,7 +63,7 @@ export const DMScreen = () => {
     },
     {
       id: "3",
-      name: "그다음은 최신순",
+      name: "User",
       lastMessage: "오운레(오늘 운동 레전드) ㅋㅋ",
       time: "오후 1:29",
       profileImage: "일반회원프로필이미지경로",
@@ -86,6 +87,8 @@ export const DMScreen = () => {
           navigation.navigate("ManagerChat");
         } else if (item.name === "Trainer") {
           navigation.navigate("TrainerChat");
+        } else if (item.name === "User") {
+          navigation.navigate("UserChat");
         }
         // 다른 채팅방들의 네비게이션 처리
       }}

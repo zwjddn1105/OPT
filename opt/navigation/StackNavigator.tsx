@@ -6,6 +6,7 @@ import LoginNeedScreen from "../screens/LoginNeedScreen";
 import FoodScreen from "../screens/FoodScreen";
 import ManagerChatScreen from "../screens/ManagerChatScreen";
 import TrainerChatScreen from "../screens/TrainerChatScreen";
+import UserChatScreen from "../screens/UserChatScreen";
 
 export type RootStackParamList = {
   Main: undefined;
@@ -15,6 +16,7 @@ export type RootStackParamList = {
   Food: { date: string };
   ManagerChat: undefined;
   TrainerChat: undefined;
+  UserChat: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -29,6 +31,7 @@ export const StackNavigator = () => {
       <Stack.Screen name="Food" component={FoodScreen} />
       <Stack.Screen name="ManagerChat" component={ManagerChatScreen} />
       <Stack.Screen name="TrainerChat" component={TrainerChatScreen} />
+      <Stack.Screen name="UserChat" component={UserChatScreen} />
     </Stack.Navigator>
   );
 };
