@@ -1,3 +1,4 @@
+// components/ExerciseModal.tsx
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput, Animated, Image, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -181,13 +182,13 @@ const ExerciseModal = ({ visible, onClose, onSave, selectedDate }: ExerciseModal
       Animated.timing(slideAnim, {
         toValue: 1,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
     } else {
       Animated.timing(slideAnim, {
         toValue: 0,
         duration: 300,
-        useNativeDriver: true,
+        useNativeDriver: false,
       }).start();
       setSelectedExercise(null);  // 모달이 닫힐 때 선택된 운동 초기화
     }
