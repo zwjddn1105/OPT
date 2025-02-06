@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HomeScreen from "../screens/HomeScreen";
 import CalendarScreen from "../screens/CalendarScreen";
-import ChallengeScreen from "../screens/challenge/ChallengeScreen";
+import MyChallengeScreen from "../screens/challenge/MyChallengeScreen";
 import ManageScreen from "../screens/ManageScreen";
 import SearchScreen from "../screens/SearchScreen";
 import { Ionicons } from "@expo/vector-icons";
@@ -41,7 +41,7 @@ export const BottomTabNavigator = () => {
     >
       <Tab.Screen name="홈" component={HomeScreen} />
       <Tab.Screen name="기록" component={CalendarScreen} />
-      <Tab.Screen name="챌린지" component={ChallengeScreen} />
+      <Tab.Screen name="챌린지" component={MyChallengeScreen} />
       <Tab.Screen name="관리" component={ManageScreen} />
       <Tab.Screen name="검색" component={SearchScreen} />
     </Tab.Navigator>
@@ -51,7 +51,7 @@ export const BottomTabNavigator = () => {
 const styles = StyleSheet.create({
   tabBar: {
     height: 90,
-    // marginBottom: 10,
+    marginTop: 10,
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#eee",
