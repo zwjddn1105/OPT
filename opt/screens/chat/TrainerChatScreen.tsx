@@ -13,7 +13,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import ChatActionModal from "../components/ChatActionModal";
+import ChatActionModal from "../../components/ChatActionModal";
 
 type RootStackParamList = {
   MainTabs: undefined;
