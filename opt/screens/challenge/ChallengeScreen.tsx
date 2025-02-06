@@ -11,7 +11,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
-
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TopHeader } from "../../components/TopHeader";
 type RootStackParamList = {
   LoginNeedScreen: undefined;
   // 다른 필요한 스크린들 추가
@@ -43,41 +44,44 @@ const ChallengeScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>SEOUL</Text>
-        <TouchableOpacity style={styles.locationButton}>
-          <Ionicons name="location-outline" size={20} color="#000" />
-          <Text style={styles.locationText}>위치 설정</Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <TopHeader />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>SEOUL</Text>
+          <TouchableOpacity style={styles.locationButton}>
+            <Ionicons name="location-outline" size={20} color="#000" />
+            <Text style={styles.locationText}>위치 설정</Text>
+          </TouchableOpacity>
+        </View>
 
-      <ScrollView style={styles.content}>
-        {/* 챌린지 카드들 */}
-        {Array.from({ length: 6 }).map((_, index) => (
-          <View key={index} style={styles.challengeCard}>
-            <View style={styles.cardHeader}>
-              <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-              <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
+        <ScrollView style={styles.content}>
+          {/* 챌린지 카드들 */}
+          {Array.from({ length: 6 }).map((_, index) => (
+            <View key={index} style={styles.challengeCard}>
+              <View style={styles.cardHeader}>
+                <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
+                <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
+              </View>
+              <View style={styles.cardContent}>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>모집기간</Text>
+                  <Text style={styles.infoValue}>2024.01.01 ~ 2024.12.31</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>지원대상</Text>
+                  <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
+                </View>
+                <View style={styles.infoRow}>
+                  <Text style={styles.infoLabel}>지원내용</Text>
+                  <Text style={styles.infoValue}>활동지원금 최대 300만원</Text>
+                </View>
+              </View>
             </View>
-            <View style={styles.cardContent}>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>모집기간</Text>
-                <Text style={styles.infoValue}>2024.01.01 ~ 2024.12.31</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>지원대상</Text>
-                <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
-              </View>
-              <View style={styles.infoRow}>
-                <Text style={styles.infoLabel}>지원내용</Text>
-                <Text style={styles.infoValue}>활동지원금 최대 300만원</Text>
-              </View>
-            </View>
-          </View>
-        ))}
-      </ScrollView>
-    </View>
+          ))}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -160,6 +164,10 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: "500",
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
   },
 });
 

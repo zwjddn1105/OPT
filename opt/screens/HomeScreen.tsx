@@ -10,9 +10,8 @@ import {
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import SendButton from "../components/SendButton";
-import ProfileButton from "../components/ProfileButton";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { TopHeader } from "../components/TopHeader";
 
 type RootStackParamList = {
   Home: undefined;
@@ -169,15 +168,6 @@ const HomeScreen: React.FC = () => {
     }, [])
   );
 
-  const handleProfilePress = async () => {
-    const token = await AsyncStorage.getItem("userToken");
-    if (token) {
-      navigation.navigate("Profile");
-    } else {
-      navigation.navigate("LoginNeedScreen");
-    }
-  };
-
   const renderTrainerSection = () => (
     <>
       <ScrollView
@@ -212,22 +202,9 @@ const HomeScreen: React.FC = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <View style={styles.headerContainer}>
-          <Image
-            source={require("../assets/logo.png")}
-            style={styles.logoImage}
-            resizeMode="contain"
-          />
-          <View style={styles.topButtons}>
-            <ProfileButton onPress={handleProfilePress} />
-            <SendButton onPress={() => navigation.navigate("DMScreen")} />
-          </View>
-        </View>
+        <TopHeader />
 
-        <ScrollView
-          style={styles.mainContent}
-          contentContainerStyle={styles.scrollViewContent}
-        >
+        <ScrollView style={styles.mainContent}>
           <View style={styles.workoutStatsSection}>
             <View style={styles.streakContainer}>
               <Text style={styles.streakNumber}>{streak}</Text>
@@ -314,11 +291,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginTop: 40,
-  },
-  topButtons: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 3,
   },
   sectionTitle: {
     fontSize: 20,
@@ -454,21 +426,7 @@ const styles = StyleSheet.create({
   tabButtonTextSelected: {
     color: "#000",
   },
-  headerContainer: {
-    // borderWidth: 1, // 테두리 두께
-    // borderColor: "#000", // 테두리 색상
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 15,
-    height: 50,
-    backgroundColor: "#fff",
-    zIndex: 1,
-  },
-  logoImage: {
-    width: 60, // 로고 크기 조절
-    height: 60,
-  },
+
   workoutStatsSection: {
     backgroundColor: "#f8f8f8",
     padding: 20,
@@ -518,9 +476,6 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     borderColor: "#000",
-  },
-  scrollViewContent: {
-    paddingBottom: 10, // 하단 네비게이터 높이만큼 여백 추가
   },
 });
 
