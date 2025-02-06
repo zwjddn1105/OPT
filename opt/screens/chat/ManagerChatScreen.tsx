@@ -58,7 +58,7 @@ export const ManagerChatScreen = () => {
         )}
         <View style={styles.messageContent}>
           <Image
-            source={require("../assets/images/manager-profile.png")}
+            source={require("../../assets/images/manager-profile.png")}
             style={styles.profileImage}
           />
           <View style={styles.textWrapper}>

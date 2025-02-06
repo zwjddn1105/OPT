@@ -61,7 +61,7 @@ export const UserChatScreen = () => {
         )}
         <View style={styles.messageContent}>
           <Image
-            source={require("../assets/images/user-profile.png")}
+            source={require("../../assets/images/user-profile.png")}
             style={styles.profileImage}
           />
           <View style={styles.textWrapper}>

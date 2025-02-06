@@ -61,7 +61,7 @@ export const TrainerChatScreen = () => {
         )}
         <View style={styles.messageContent}>
           <Image
-            source={require("../assets/images/trainer-profile.png")}
+            source={require("../../assets/images/trainer-profile.png")}
             style={styles.profileImage}
           />
           <View style={styles.textWrapper}>
