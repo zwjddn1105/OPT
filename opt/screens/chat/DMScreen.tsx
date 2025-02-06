@@ -11,6 +11,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 type RootStackParamList = {
   MainTabs: undefined;
@@ -121,64 +122,66 @@ export const DMScreen = () => {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => {
-            if (navigation.canGoBack()) {
-              navigation.goBack();
-            }
-          }}
-          style={styles.backButton}
-        >
-          <Ionicons name="chevron-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>nickname</Text>
-        <TouchableOpacity
-          onPress={() => setFollowerListVisible(!isFollowerListVisible)}
-          style={styles.addButton}
-        >
-          <Ionicons name="add" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              }
+            }}
+            style={styles.backButton}
+          >
+            <Ionicons name="chevron-back" size={24} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>nickname</Text>
+          <TouchableOpacity
+            onPress={() => setFollowerListVisible(!isFollowerListVisible)}
+            style={styles.addButton}
+          >
+            <Ionicons name="add" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
 
-      {isFollowerListVisible ? (
-        <View style={styles.contentContainer}>
-          <Text style={styles.sectionTitle}>팔로워</Text>
-          <FlatList
-            data={followers}
-            renderItem={renderFollower}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
-      ) : (
-        <View style={styles.contentContainer}>
-          <View style={styles.searchContainer}>
-            <View style={styles.searchInputWrapper}>
-              <Ionicons
-                name="search-outline"
-                size={20}
-                color="#999"
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={styles.searchInput}
-                placeholder="검색"
-                placeholderTextColor="#999"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
-            </View>
+        {isFollowerListVisible ? (
+          <View style={styles.contentContainer}>
+            <Text style={styles.sectionTitle}>팔로워</Text>
+            <FlatList
+              data={followers}
+              renderItem={renderFollower}
+              keyExtractor={(item) => item.id}
+            />
           </View>
-          <Text style={styles.sectionTitle}>메시지</Text>
-          <FlatList
-            data={filteredChatRooms}
-            renderItem={renderChatRoom}
-            keyExtractor={(item) => item.id}
-          />
-        </View>
-      )}
-    </View>
+        ) : (
+          <View style={styles.contentContainer}>
+            <View style={styles.searchContainer}>
+              <View style={styles.searchInputWrapper}>
+                <Ionicons
+                  name="search-outline"
+                  size={20}
+                  color="#999"
+                  style={styles.searchIcon}
+                />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="검색"
+                  placeholderTextColor="#999"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                />
+              </View>
+            </View>
+            <Text style={styles.sectionTitle}>메시지</Text>
+            <FlatList
+              data={filteredChatRooms}
+              renderItem={renderChatRoom}
+              keyExtractor={(item) => item.id}
+            />
+          </View>
+        )}
+      </View>
+    </SafeAreaView>
   );
 };
 
@@ -263,6 +266,10 @@ const styles = StyleSheet.create({
   time: {
     fontSize: 12,
     color: "#999",
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
   },
 });
 
