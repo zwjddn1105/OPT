@@ -33,6 +33,7 @@ const ChallengeCard = () => (
       style={styles.cardImage}
       defaultSource={require("../assets/challenge-placeholder.png")}
     />
+
     <View style={styles.cardContent}>
       <Text style={styles.cardTitle}>X-CHALLENGE SEOUL</Text>
       <Text style={styles.cardDescription}>서울시 청년 도전 지원사업</Text>
