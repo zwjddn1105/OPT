@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   calendarContainer: {
-    paddingTop: 50,
+    // paddingTop: 10,
   },
   dateText: {
     fontSize: 18,
