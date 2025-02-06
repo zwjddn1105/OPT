@@ -32,7 +32,7 @@ const LoginNeedScreen = () => {
       <Video
         ref={video}
         style={styles.video}
-        source={require("../assets/mv3.mp4")}
+        source={require("../assets/mv.mp4")}
         resizeMode={ResizeMode.COVER}
         isLooping
         shouldPlay
