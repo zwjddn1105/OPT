@@ -224,7 +224,10 @@ const HomeScreen: React.FC = () => {
           </View>
         </View>
 
-        <ScrollView style={styles.mainContent}>
+        <ScrollView
+          style={styles.mainContent}
+          contentContainerStyle={styles.scrollViewContent}
+        >
           <View style={styles.workoutStatsSection}>
             <View style={styles.streakContainer}>
               <Text style={styles.streakNumber}>{streak}</Text>
@@ -515,6 +518,9 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     borderColor: "#000",
+  },
+  scrollViewContent: {
+    paddingBottom: 10, // 하단 네비게이터 높이만큼 여백 추가
   },
 });
 
