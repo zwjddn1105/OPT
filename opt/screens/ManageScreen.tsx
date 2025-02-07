@@ -3,6 +3,8 @@ import { View, Text, ScrollView, TouchableOpacity, StyleSheet, Image } from 'rea
 import { useState } from 'react';
 import PlusButton from '../components/PlusButton';
 import { Ionicons } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TopHeader } from "../components/TopHeader";
 
 interface SessionHistory {
   id: number;
@@ -21,6 +23,7 @@ interface TicketCard {
   member: string;
   sessionHistory: SessionHistory[];
 }
+
 
 export const ManageScreen = () => {
   const today = new Date();
@@ -159,135 +162,140 @@ export const ManageScreen = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView>
-        <View style={styles.contentContainer}>
-        <Text style={styles.monthTitle}>{formatMonthYear(selectedDate)}</Text>
-        
-        <View style={styles.weekHeader}>
-          {weekDates.map((date, index) => {
-            const isSelected = date.toDateString() === selectedDate.toDateString();
-            const isToday = date.toDateString() === today.toDateString();
-            
-            return (
-              <TouchableOpacity 
-                key={index}
-                onPress={() => handleDateSelect(date)}
-                style={[
-                  styles.dayCell,
-                  isSelected && styles.selectedDay
-                ]}
-              >
-                <Text style={[
-                  styles.dayText,
-                  isSelected && styles.selectedDayText
-                ]}>{getDayName(date)}</Text>
-                <Text style={[
-                  styles.dateText,
-                  isSelected && styles.selectedDayText,
-                  isToday && !isSelected && styles.todayText,
-                  (isSelected && isToday) && styles.selectedTodayText
-                ]}>{date.getDate()}</Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
 
-        {filteredSchedules.map((schedule) => (
-          <View key={schedule.id} style={styles.scheduleItem}>
-            <View style={styles.scheduleMarker} />
-            <View style={styles.scheduleContent}>
-              <Text style={styles.scheduleTitle}>{schedule.nickname}</Text>
-              <Text style={styles.scheduleTime}>{schedule.time}</Text>
-            </View>
+    <SafeAreaView style={styles.safeArea}>
+      <TopHeader />
+      <View style={styles.container}>
+        <ScrollView>
+          <View style={styles.contentContainer}>
+          <Text style={styles.monthTitle}>{formatMonthYear(selectedDate)}</Text>
+
+          <View style={styles.weekHeader}>
+            {weekDates.map((date, index) => {
+              const isSelected = date.toDateString() === selectedDate.toDateString();
+              const isToday = date.toDateString() === today.toDateString();
+
+              return (
+                <TouchableOpacity 
+                  key={index}
+                  onPress={() => handleDateSelect(date)}
+                  style={[
+                    styles.dayCell,
+                    isSelected && styles.selectedDay
+                  ]}
+                >
+                  <Text style={[
+                    styles.dayText,
+                    isSelected && styles.selectedDayText
+                  ]}>{getDayName(date)}</Text>
+                  <Text style={[
+                    styles.dateText,
+                    isSelected && styles.selectedDayText,
+                    isToday && !isSelected && styles.todayText,
+                    (isSelected && isToday) && styles.selectedTodayText
+                  ]}>{date.getDate()}</Text>
+                </TouchableOpacity>
+              );
+            })}
           </View>
-        ))}
-        <View style={styles.plusButtonWrapper}>
-          <PlusButton onPress={handleAddSchedule} />
-        </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.ticketContainer}
-          contentContainerStyle={styles.ticketContent}
-        >
-          {tickets.map((ticket) => (
-            <View key={ticket.id} style={[
-              styles.card,
-              expandedCard === ticket.id ? styles.cardExpanded : styles.cardCollapsed
-            ]}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.status}>사용중</Text>
+          {filteredSchedules.map((schedule) => (
+            <View key={schedule.id} style={styles.scheduleItem}>
+              <View style={styles.scheduleMarker} />
+              <View style={styles.scheduleContent}>
+                <Text style={styles.scheduleTitle}>{schedule.nickname}</Text>
+                <Text style={styles.scheduleTime}>{schedule.time}</Text>
               </View>
-              
-              <View style={styles.cardContent}>
-                <View style={styles.imageContainer}>
-                  <Image
-                    source={{ uri: '/api/placeholder/80/80' }}
-                    style={styles.image}
-                  />
-                </View>
-                
-                <View style={styles.infoContainer}>
-                  <Text style={styles.ptName}>{ticket.ptName}</Text>
-                  <Text style={styles.sessionCount}>
-                    {ticket.completedSessions}/{ticket.totalSessions}
-                  </Text>
-                  <Text style={styles.date}>계약일: {ticket.contractDate}</Text>
-                  <View style={styles.userInfo}>
-                    <Text style={styles.trainer}>트레이너: {ticket.trainer}</Text>
-                    <Text style={styles.divider}> / </Text>
-                    <Text style={styles.member}>회원: {ticket.member}</Text>
-                  </View>
-                </View>
-              </View>
-
-              <TouchableOpacity
-                style={styles.historyButton}
-                onPress={() => toggleExpand(ticket.id)}
-              >
-                <View style={styles.historyButtonContent}>
-                  <Text style={styles.historyButtonText}>세션 진행 현황</Text>
-                  <Ionicons 
-                    name={expandedCard === ticket.id ? "chevron-up" : "chevron-down"} 
-                    size={20} 
-                    color="#fff" 
-                  />
-                </View>
-              </TouchableOpacity>
-
-              {expandedCard === ticket.id && (
-                <View style={styles.historyContainer}>
-                  <ScrollView style={styles.historyScroll}>
-                    {ticket.sessionHistory.map((session) => (
-                      <View key={session.id} style={styles.historyItem}>
-                        <Text style={styles.sessionNumber}>{session.id}회</Text>
-                        <View style={styles.sessionStatus}>
-                          {session.completed ? (
-                            <>
-                              <Text style={styles.completedText}>완료</Text>
-                              <Text style={styles.sessionDate}>{session.date}</Text>
-                            </>
-                          ) : (
-                            <Text style={styles.pendingText}>예정</Text>
-                          )}
-                        </View>
-                      </View>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
             </View>
           ))}
+          <View style={styles.plusButtonWrapper}>
+            <PlusButton onPress={handleAddSchedule} />
+          </View>
+
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.ticketContainer}
+            contentContainerStyle={styles.ticketContent}
+          >
+            {tickets.map((ticket) => (
+              <View key={ticket.id} style={[
+                styles.card,
+                expandedCard === ticket.id ? styles.cardExpanded : styles.cardCollapsed
+              ]}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.status}>사용중</Text>
+                </View>
+
+                <View style={styles.cardContent}>
+                  <View style={styles.imageContainer}>
+                    <Image
+                      source={{ uri: '/api/placeholder/80/80' }}
+                      style={styles.image}
+                    />
+                  </View>
+
+                  <View style={styles.infoContainer}>
+                    <Text style={styles.ptName}>{ticket.ptName}</Text>
+                    <Text style={styles.sessionCount}>
+                      {ticket.completedSessions}/{ticket.totalSessions}
+                    </Text>
+                    <Text style={styles.date}>계약일: {ticket.contractDate}</Text>
+                    <View style={styles.userInfo}>
+                      <Text style={styles.trainer}>트레이너: {ticket.trainer}</Text>
+                      <Text style={styles.divider}> / </Text>
+                      <Text style={styles.member}>회원: {ticket.member}</Text>
+                    </View>
+                  </View>
+                </View>
+
+                <TouchableOpacity
+                  style={styles.historyButton}
+                  onPress={() => toggleExpand(ticket.id)}
+                >
+                  <View style={styles.historyButtonContent}>
+                    <Text style={styles.historyButtonText}>세션 진행 현황</Text>
+                    <Ionicons 
+                      name={expandedCard === ticket.id ? "chevron-up" : "chevron-down"} 
+                      size={20} 
+                      color="#fff" 
+                    />
+                  </View>
+                </TouchableOpacity>
+
+                {expandedCard === ticket.id && (
+                  <View style={styles.historyContainer}>
+                    <ScrollView style={styles.historyScroll}>
+                      {ticket.sessionHistory.map((session) => (
+                        <View key={session.id} style={styles.historyItem}>
+                          <Text style={styles.sessionNumber}>{session.id}회</Text>
+                          <View style={styles.sessionStatus}>
+                            {session.completed ? (
+                              <>
+                                <Text style={styles.completedText}>완료</Text>
+                                <Text style={styles.sessionDate}>{session.date}</Text>
+                              </>
+                            ) : (
+                              <Text style={styles.pendingText}>예정</Text>
+                            )}
+                          </View>
+                        </View>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+              </View>
+            ))}
+          </ScrollView>
+          </View>
         </ScrollView>
-        </View>
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+
   container: {
     flex: 1,
     backgroundColor: '#fff',
@@ -483,6 +491,10 @@ const styles = StyleSheet.create({
   },
   sessionDate: {
     color: '#666',
+  },
+  safeArea: {
+  flex: 1,
+  backgroundColor: "#fff",
   },
 });
 

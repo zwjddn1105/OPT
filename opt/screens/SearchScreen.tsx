@@ -2,7 +2,9 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Modal, StyleSheet, TouchableOpacity, TextInput, Animated, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
+import { SafeAreaView } from "react-native-safe-area-context";
+import { TopHeader } from "../components/TopHeader";
+        
 type FilterCategories = {
   [key: string]: string[];
 };
@@ -336,133 +338,142 @@ const SearchScreen = () => {
   }, [searchQuery, selectedSort, selectedFilters, searchCategory]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <View>
-          <TouchableOpacity 
-            style={[styles.categoryButton, { width: 80 }]}
-            onPress={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
-          >
-            <Text style={[styles.categoryText, { textAlign: 'left', width: '100%' }]}>
-              {searchCategory === 'address' ? '주소' : '이름'}
-            </Text>
-            <Ionicons 
-              name="chevron-down" 
-              size={16} 
-              color="#666" 
-              style={{ position: 'absolute', right: 5 }} 
-            />
-          </TouchableOpacity>
-  
-          {isCategoryDropdownOpen && (
-            <View style={styles.categoryDropdown}>
-              {categoryOptions
-                .filter(option => option.id !== searchCategory)
-                .map(option => (
-                  <TouchableOpacity
-                    key={option.id}
-                    style={styles.categoryDropdownItem}
-                    onPress={() => {
-                      setSearchCategory(option.id as 'address' | 'name');
-                      setIsCategoryDropdownOpen(false);
-                    }}
-                  >
-                    <Text style={styles.categoryDropdownItemText}>
-                      {option.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))
-              }
-            </View>
-          )}
-        </View>
+    <SafeAreaView style={styles.safeArea}>
+      <TopHeader />
+      <View style={styles.container}>
+        <View style={styles.header}>
+          <View>
+            <TouchableOpacity 
+              style={[styles.categoryButton, { width: 80 }]}
+              onPress={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+            >
+              <Text style={[styles.categoryText, { textAlign: 'left', width: '100%' }]}>
+                {searchCategory === 'address' ? '주소' : '이름'}
+              </Text>
+              <Ionicons 
+                name="chevron-down" 
+                size={16} 
+                color="#666" 
+                style={{ position: 'absolute', right: 5 }} 
+              />
+            </TouchableOpacity>
 
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="원하는 트레이너를 검색해보세요"
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <TouchableOpacity style={styles.searchButton}>
-            <Ionicons name="search" size={20} color="#666" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.filtersArea}>
-        {selectedFilters.length > 0 && (
-          <ScrollView
-            horizontal
-            style={styles.selectedFiltersContainer}
-            showsHorizontalScrollIndicator={false}
-          >
-            {selectedFilters.map((filter) => (
-              <TouchableOpacity
-                key={filter}
-                style={styles.selectedFilterButton}
-                onPress={() => setSelectedFilters(selectedFilters.filter(f => f !== filter))}
-              >
-                <Text style={styles.selectedFilterText}>{filter}</Text>
-                <Ionicons name="close" size={12} color="#666" style={styles.selectedFilterIcon} />
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        )}
-
-        <View style={styles.filterSection}>
-          <TouchableOpacity 
-            style={styles.sortTriggerButton} 
-            onPress={() => {
-              setOpenedFromSort(true);
-              setIsFilterVisible(true);
-            }}
-          >
-            <Text style={styles.sortTriggerText}>
-              {sortOptions.find(opt => opt.id === selectedSort)?.label || '추천순'}
-            </Text>
-            <Text style={{ color: '#666', fontSize: 16 }}>↑↓</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={styles.filterButton} 
-            onPress={() => {
-              setOpenedFromSort(false);
-              setIsFilterVisible(true);
-            }}
-          >
-            <Ionicons name="options-outline" size={16} color="#666" style={{ marginRight: 4 }} />
-            <Text style={styles.filterButtonText}>필터</Text>
-            {selectedFilters.length > 0 && (
-              <Text style={styles.filterCount}>({selectedFilters.length})</Text>
+            {isCategoryDropdownOpen && (
+              <View style={styles.categoryDropdown}>
+                {categoryOptions
+                  .filter(option => option.id !== searchCategory)
+                  .map(option => (
+                    <TouchableOpacity
+                      key={option.id}
+                      style={styles.categoryDropdownItem}
+                      onPress={() => {
+                        setSearchCategory(option.id as 'address' | 'name');
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                    >
+                      <Text style={styles.categoryDropdownItemText}>
+                        {option.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))
+                }
+              </View>
             )}
-          </TouchableOpacity>
+          </View>
+
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="원하는 트레이너를 검색해보세요"
+              placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            <TouchableOpacity style={styles.searchButton}>
+              <Ionicons name="search" size={20} color="#666" />
+            </TouchableOpacity>
+          </View>
         </View>
 
-        <FilterSideBar 
-          visible={isFilterVisible} 
-          onClose={() => {
-            setIsFilterVisible(false);
-            setOpenedFromSort(false);
-          }}
-          selectedSort={selectedSort}
-          onSortChange={setSelectedSort}
-          sortOptions={sortOptions}
-          openedFromSort={openedFromSort}
-          selectedFilters={selectedFilters}
-          onFilterChange={setSelectedFilters}
-        />
-      </View>
+        <View style={styles.filtersArea}>
+          {selectedFilters.length > 0 && (
+            <ScrollView
+              horizontal
+              style={styles.selectedFiltersContainer}
+              showsHorizontalScrollIndicator={false}
+            >
+              {selectedFilters.map((filter) => (
+                <TouchableOpacity
+                  key={filter}
+                  style={styles.selectedFilterButton}
+                  onPress={() => setSelectedFilters(selectedFilters.filter(f => f !== filter))}
+                >
+                  <Text style={styles.selectedFilterText}>{filter}</Text>
+                  <Ionicons name="close" size={12} color="#666" style={styles.selectedFilterIcon} />
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          )}
 
-      <ScrollView style={styles.cardContainer}>
-        {trainers.map(trainer => (
-          <TrainerCard key={trainer.id} trainer={trainer} />
-        ))}
-      </ScrollView>
-    </View>
+          <View style={styles.filterSection}>
+            <TouchableOpacity 
+              style={styles.sortTriggerButton} 
+              onPress={() => {
+                setOpenedFromSort(true);
+                setIsFilterVisible(true);
+              }}
+            >
+              <Text style={styles.sortTriggerText}>
+                {sortOptions.find(opt => opt.id === selectedSort)?.label || '추천순'}
+              </Text>
+              <Text style={{ color: '#666', fontSize: 16 }}>↑↓</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity 
+              style={styles.filterButton} 
+              onPress={() => {
+                setOpenedFromSort(false);
+                setIsFilterVisible(true);
+              }}
+            >
+              <Ionicons name="options-outline" size={16} color="#666" style={{ marginRight: 4 }} />
+              <Text style={styles.filterButtonText}>필터</Text>
+              {selectedFilters.length > 0 && (
+                <Text style={styles.filterCount}>({selectedFilters.length})</Text>
+              )}
+            </TouchableOpacity>
+          </View>
+
+          <FilterSideBar 
+            visible={isFilterVisible} 
+            onClose={() => {
+              setIsFilterVisible(false);
+              setOpenedFromSort(false);
+            }}
+            selectedSort={selectedSort}
+            onSortChange={setSelectedSort}
+            sortOptions={sortOptions}
+            openedFromSort={openedFromSort}
+            selectedFilters={selectedFilters}
+            onFilterChange={setSelectedFilters}
+          />
+        </View>
+
+        <ScrollView style={styles.cardContainer}>
+          {trainers.map(trainer => (
+            <TrainerCard key={trainer.id} trainer={trainer} />
+          ))}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 };
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+});
 
 const styles = StyleSheet.create({
   container: {
@@ -842,6 +853,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '500',
   },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
 });
-
 export default SearchScreen;
