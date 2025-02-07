@@ -1,8 +1,8 @@
+// MyChallengeScreen.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  Alert,
   TouchableOpacity,
   StyleSheet,
   ScrollView,
@@ -17,62 +17,61 @@ import { TopHeader } from "../../components/TopHeader";
 
 type RootStackParamList = {
   LoginNeedScreen: undefined;
+  OngoingChallenges: undefined;
+  AppliedChallenges: undefined;
+  PastChallenges: undefined;
 };
 
 const MyChallengeScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
-  useEffect(() => {
-    const checkLoginStatus = async () => {
-      const token = await AsyncStorage.getItem("userToken");
-      if (!token) {
-        navigation.navigate("LoginNeedScreen");
-      }
-    };
-    checkLoginStatus();
-  }, []);
-
   const [isEnabled, setIsEnabled] = useState(true);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
+
+  const renderSectionHeader = (
+    title: string,
+    navigateTo: keyof RootStackParamList
+  ) => (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => navigation.navigate(navigateTo)}
+      >
+        <Text style={styles.addButtonText}>+</Text>
+      </TouchableOpacity>
+    </View>
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
       <TopHeader />
       <ScrollView style={styles.container}>
+        <TouchableOpacity
+          style={styles.toggleContainer}
+          onPress={toggleSwitch}
+          activeOpacity={0.8}
+        >
+          <View
+            style={[styles.toggleTrack, isEnabled && styles.toggleTrackActive]}
+          >
+            <Text
+              style={[styles.toggleText, isEnabled && styles.toggleTextActive]}
+            >
+              MY
+            </Text>
+            <View
+              style={[
+                styles.toggleThumb,
+                isEnabled && styles.toggleThumbActive,
+              ]}
+            />
+          </View>
+        </TouchableOpacity>
+
         {/* 진행중인 챌린지 섹션 */}
         <View style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>내가 진행중인 챌린지</Text>
-            <TouchableOpacity
-              style={styles.toggleContainer}
-              onPress={toggleSwitch}
-              activeOpacity={0.8}
-            >
-              <View
-                style={[
-                  styles.toggleTrack,
-                  isEnabled && styles.toggleTrackActive,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.toggleText,
-                    isEnabled && styles.toggleTextActive,
-                  ]}
-                >
-                  MY
-                </Text>
-                <View
-                  style={[
-                    styles.toggleThumb,
-                    isEnabled && styles.toggleThumbActive,
-                  ]}
-                />
-              </View>
-            </TouchableOpacity>
-          </View>
-
+          {renderSectionHeader("내가 진행중인 챌린지", "OngoingChallenges")}
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             {Array.from({ length: 3 }).map((_, index) => (
               <View key={index} style={styles.challengeCard}>
@@ -105,7 +104,7 @@ const MyChallengeScreen = () => {
 
         {/* 신청한 챌린지 섹션 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>내가 신청한 챌린지</Text>
+          {renderSectionHeader("내가 신청한 챌린지", "AppliedChallenges")}
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             {Array.from({ length: 3 }).map((_, index) => (
               <View key={index} style={styles.challengeCard}>
@@ -138,7 +137,7 @@ const MyChallengeScreen = () => {
 
         {/* 참여했던 챌린지 섹션 */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>내가 참여했던 챌린지</Text>
+          {renderSectionHeader("내가 참여했던 챌린지", "PastChallenges")}
           <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
             {Array.from({ length: 3 }).map((_, index) => (
               <View key={index} style={styles.challengeCard}>
@@ -179,23 +178,44 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   container: {
+    marginBottom: 10,
     flex: 1,
   },
   section: {
-    marginTop: 20,
+    marginTop: 10,
     paddingHorizontal: 20,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: "bold",
     lineHeight: 30,
   },
+  addButton: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#F5F5F5",
+    justifyContent: "center",
+    alignItems: "center",
+    marginLeft: 8,
+  },
+  addButtonText: {
+    fontSize: 18,
+    color: "#666",
+    lineHeight: 24,
+  },
   challengeCard: {
-    width: 300,
-    marginRight: 15,
+    width: 180,
+    marginRight: 12,
     backgroundColor: "#fff",
     borderRadius: 15,
-    padding: 20,
+    padding: 16,
     borderWidth: 1,
     borderColor: "#eee",
     shadowColor: "#000",
@@ -211,12 +231,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   cardTitle: {
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: "bold",
     marginBottom: 4,
   },
   cardSubtitle: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#666",
   },
   cardContent: {
@@ -227,30 +247,25 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   infoLabel: {
-    width: 80,
-    fontSize: 14,
+    width: 70,
+    fontSize: 12,
     color: "#666",
   },
   infoValue: {
     flex: 1,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "500",
   },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 15,
-  },
   toggleContainer: {
-    width: 75, // 70에서 90으로 늘림
-    height: 30, // 35에서 30으로 줄임
-    alignSelf: "center",
+    width: 75,
+    height: 30,
+    alignSelf: "flex-end",
+    marginRight: 20,
   },
   toggleTrack: {
     width: "100%",
     height: "100%",
-    borderRadius: 15, // height의 절반으로 설정
+    borderRadius: 15,
     backgroundColor: "#767577",
     flexDirection: "row",
     alignItems: "center",
@@ -263,8 +278,8 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   toggleThumb: {
-    width: 24, // 28에서 24로 줄임
-    height: 24, // 28에서 24로 줄임
+    width: 24,
+    height: 24,
     borderRadius: 12,
     backgroundColor: "#f4f3f4",
     position: "absolute",
@@ -272,13 +287,13 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     color: "#f4f3f4",
-    fontSize: 13, // 텍스트 크기도 약간 줄임
+    fontSize: 13,
     fontWeight: "bold",
     marginLeft: 8,
   },
   toggleThumbActive: {
     left: "auto",
-    right: 4, // 활성화 상태일 때 오른쪽으로
+    right: 4,
     backgroundColor: "#fff",
   },
   customToggle: {

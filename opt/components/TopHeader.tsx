@@ -1,6 +1,6 @@
 // components/TopHeader.tsx
 import React from "react";
-import { View, Image, StyleSheet } from "react-native";
+import { View, Image, StyleSheet, TouchableOpacity } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import ProfileButton from "./ProfileButton";
@@ -10,7 +10,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 type RootStackParamList = {
   LoginNeedScreen: undefined;
   DMScreen: undefined;
-  // 다른 필요한 스크린들도 여기에 추가
+  Main: {
+    screen?: string;
+  };
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -29,11 +31,15 @@ export const TopHeader = () => {
 
   return (
     <View style={styles.headerContainer}>
-      <Image
-        source={require("../assets/logo.png")}
-        style={styles.logoImage}
-        resizeMode="contain"
-      />
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Main", { screen: "홈" })}
+      >
+        <Image
+          source={require("../assets/logo.png")}
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
+      </TouchableOpacity>
       <View style={styles.topButtons}>
         <ProfileButton onPress={handleProfilePress} />
         <SendButton onPress={() => navigation.navigate("DMScreen")} />
