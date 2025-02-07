@@ -6,7 +6,7 @@ import ManageScreen from "../screens/ManageScreen";
 import SearchScreen from "../screens/SearchScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
-
+import { View } from "react-native";
 const Tab = createBottomTabNavigator();
 
 export const BottomTabNavigator = () => {
@@ -14,6 +14,7 @@ export const BottomTabNavigator = () => {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        contentStyle: styles.contentStyle,
         tabBarIcon: ({ focused, color, size }) => {
           let iconName: keyof typeof Ionicons.glyphMap = "home";
 
@@ -37,6 +38,9 @@ export const BottomTabNavigator = () => {
         tabBarStyle: styles.tabBar,
         tabBarLabelStyle: styles.tabBarLabel,
         tabBarIconStyle: styles.tabBarIcon,
+        tabBarBackground: () => (
+          <View style={{ flex: 1, backgroundColor: "#fff" }} />
+        ),
       })}
     >
       <Tab.Screen name="홈" component={HomeScreen} />
@@ -51,7 +55,6 @@ export const BottomTabNavigator = () => {
 const styles = StyleSheet.create({
   tabBar: {
     height: 90,
-    marginTop: 10,
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#eee",
@@ -62,5 +65,8 @@ const styles = StyleSheet.create({
   },
   tabBarIcon: {
     marginTop: 5,
+  },
+  contentStyle: {
+    backgroundColor: "#fff",
   },
 });

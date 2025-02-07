@@ -285,6 +285,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   container: {
+    marginBottom: 10,
     flex: 1,
   },
   mainContent: {
