@@ -468,12 +468,6 @@ const SearchScreen = () => {
     </SafeAreaView>
   );
 };
-const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-});
 
 const styles = StyleSheet.create({
   container: {
