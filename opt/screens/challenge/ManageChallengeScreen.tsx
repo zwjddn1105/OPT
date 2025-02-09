@@ -1,4 +1,3 @@
-// OngoingChallengesScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -7,6 +6,7 @@ import {
   ScrollView,
   SafeAreaView,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -16,13 +16,87 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 type RootStackParamList = {
   CreateChallenge: undefined;
 };
-const OngoingChallengesScreen = () => {
+
+const ManageChallengesScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [selectedChallenge, setSelectedChallenge] = useState(null);
+
   const renderSectionHeader = (title: string) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
     </View>
+  );
+
+  const openModal = (challenge: any) => {
+    setSelectedChallenge(challenge);
+    setModalVisible(true);
+  };
+
+  const renderChallengeCard = (challenge: any, index: any) => (
+    <TouchableOpacity
+      key={index}
+      style={styles.challengeCard}
+      onPress={() => openModal(challenge)}
+    >
+      <View style={styles.cardHeader}>
+        <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
+        <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
+      </View>
+      <View style={styles.cardContent}>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>모집기간</Text>
+          <Text style={styles.infoValue}>2024.01.01 ~ 2024.12.31</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>지원대상</Text>
+          <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
+        </View>
+        <View style={styles.infoRow}>
+          <Text style={styles.infoLabel}>지원내용</Text>
+          <Text style={styles.infoValue}>활동지원금 최대 300만원</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderModal = () => (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => setModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <TouchableOpacity
+            style={styles.modalButton}
+            onPress={() => {
+              // 상세화면 보기 로직
+              setModalVisible(false);
+            }}
+          >
+            <Text style={styles.modalButtonText}>챌린지 상세화면보기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modalButton, styles.deleteButton]}
+            onPress={() => {
+              // 삭제 로직
+              setModalVisible(false);
+            }}
+          >
+            <Text style={styles.modalButtonText}>챌린지 삭제하기</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.closeButtonText}>닫기</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
   );
 
   return (
@@ -46,37 +120,15 @@ const OngoingChallengesScreen = () => {
         </View>
 
         <View style={styles.section}>
-          {renderSectionHeader("오픈 예정인 챌린지")}
+          {renderSectionHeader("내가 오픈 예정인 챌린지")}
           <View style={styles.cardContainer}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <View key={index} style={styles.challengeCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-                  <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
-                </View>
-                <View style={styles.cardContent}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>모집기간</Text>
-                    <Text style={styles.infoValue}>
-                      2024.01.01 ~ 2024.12.31
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원대상</Text>
-                    <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원내용</Text>
-                    <Text style={styles.infoValue}>
-                      활동지원금 최대 300만원
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))}
+            {Array.from({ length: 3 }).map((_, index) =>
+              renderChallengeCard(_, index)
+            )}
           </View>
         </View>
       </ScrollView>
+      {renderModal()}
     </SafeAreaView>
   );
 };
@@ -178,7 +230,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingRight: 20,
-    // marginTop: 7,
   },
   createButton: {
     paddingHorizontal: 12,
@@ -192,6 +243,49 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "500",
   },
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  modalButton: {
+    backgroundColor: "#0C508B",
+    borderRadius: 10,
+    padding: 10,
+    elevation: 2,
+    marginBottom: 15,
+    minWidth: 200,
+  },
+  modalButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  deleteButton: {
+    backgroundColor: "#FF0000",
+  },
+  closeButton: {
+    marginTop: 10,
+  },
+  closeButtonText: {
+    color: "#0C508B",
+    fontWeight: "bold",
+  },
 });
 
-export default OngoingChallengesScreen;
+export default ManageChallengesScreen;
