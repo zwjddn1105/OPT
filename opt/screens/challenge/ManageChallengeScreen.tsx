@@ -12,13 +12,13 @@ import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { TopHeader } from "../../components/TopHeader";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-type RootStackParamList = {};
+
+type RootStackParamList = {
+  CreateChallenge: undefined;
+};
 const OngoingChallengesScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [isEnabled, setIsEnabled] = useState(true);
-  const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
-
   const renderSectionHeader = (title: string) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
@@ -37,36 +37,16 @@ const OngoingChallengesScreen = () => {
             <Ionicons name="chevron-back" size={24} color="black" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.toggleContainer}
-            onPress={toggleSwitch}
+            style={styles.createButton}
+            onPress={() => navigation.navigate("CreateChallenge")}
             activeOpacity={0.8}
           >
-            <View
-              style={[
-                styles.toggleTrack,
-                isEnabled && styles.toggleTrackActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.toggleText,
-                  isEnabled && styles.toggleTextActive,
-                ]}
-              >
-                MY
-              </Text>
-              <View
-                style={[
-                  styles.toggleThumb,
-                  isEnabled && styles.toggleThumbActive,
-                ]}
-              />
-            </View>
+            <Text style={styles.createButtonText}>챌린지 만들기</Text>
           </TouchableOpacity>
         </View>
 
         <View style={styles.section}>
-          {renderSectionHeader("내가 진행중인 챌린지")}
+          {renderSectionHeader("오픈 예정인 챌린지")}
           <View style={styles.cardContainer}>
             {Array.from({ length: 3 }).map((_, index) => (
               <View key={index} style={styles.challengeCard}>
@@ -189,55 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "500",
   },
-  toggleContainer: {
-    width: 75,
-    height: 30,
-  },
-  toggleTrack: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 15,
-    backgroundColor: "#767577",
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 4,
-  },
-  toggleTrackActive: {
-    backgroundColor: "#0C508B",
-  },
-  toggleTextActive: {
-    color: "#fff",
-  },
-  toggleThumb: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: "#f4f3f4",
-    position: "absolute",
-    left: 4,
-  },
-  toggleText: {
-    color: "#f4f3f4",
-    fontSize: 13,
-    fontWeight: "bold",
-    marginLeft: 8,
-  },
-  toggleThumbActive: {
-    left: "auto",
-    right: 4,
-    backgroundColor: "#fff",
-  },
-  customToggle: {
-    width: 70,
-    height: 35,
-    borderRadius: 20,
-    backgroundColor: "#767577",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  customToggleActive: {
-    backgroundColor: "#0C508B",
-  },
   backButton: {
     padding: 8,
     marginLeft: 12,
@@ -248,6 +179,18 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingRight: 20,
     // marginTop: 7,
+  },
+  createButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: "#0C508B",
+    borderRadius: 15,
+    marginRight: 20,
+  },
+  createButtonText: {
+    fontSize: 14,
+    color: "#fff",
+    fontWeight: "500",
   },
 });
 
