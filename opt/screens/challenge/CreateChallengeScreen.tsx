@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
   TextInput,
+  Modal,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,13 +18,18 @@ import { Dropdown } from "react-native-element-dropdown";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 type RootStackParamList = {};
+type DropdownItem = {
+  label: string;
+  value: string;
+};
 
 const placeholderTextColor = "#999";
 
 const CreateChallengeScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [selectedType, setSelectedType] = useState(null);
+  const [selectedType, setSelectedType] = useState<DropdownItem | null>(null);
+
   const [selectedPeriod, setSelectedPeriod] = useState(null);
   const [customPeriod, setCustomPeriod] = useState("");
 
@@ -35,18 +41,22 @@ const CreateChallengeScreen = () => {
   const [isRewardChecked, setIsRewardChecked] = useState(false);
   const [rewardText, setRewardText] = useState("");
 
+  const [title, setTitle] = useState(""); // 주제
+  const [count, setCount] = useState(""); // 횟수
+  const [maxParticipants, setMaxParticipants] = useState(""); // 상한인원
+  const [isModalVisible, setModalVisible] = useState(false); // 모달 표시 여부
+
   const types = [
-    { label: "운동 챌린지", value: "1" },
-    { label: "식단 챌린지", value: "2" },
-    { label: "생활 습관 챌린지", value: "3" },
-    { label: "학습 챌린지", value: "4" },
+    { label: "협동 챌린지", value: "1" },
+    { label: "매일 챌린지", value: "2" },
+    { label: "서바이벌 챌린지", value: "3" },
   ];
 
   const periods = [
     { label: "매일", value: "1" },
-    { label: "1주", value: "2" },
-    { label: "2주", value: "3" },
-    { label: "3주", value: "4" },
+    { label: "7일", value: "2" },
+    { label: "14일", value: "3" },
+    { label: "", value: "4" },
     { label: "30일", value: "5" },
     { label: "직접입력", value: "custom" },
   ];
@@ -98,9 +108,9 @@ const CreateChallengeScreen = () => {
               labelField="label"
               valueField="value"
               placeholder="챌린지 종류를 선택해주세요."
-              value={selectedType}
+              value={selectedType?.value}
               onChange={(item) => {
-                setSelectedType(item.value);
+                setSelectedType(item);
               }}
             />
           </View>
@@ -112,6 +122,8 @@ const CreateChallengeScreen = () => {
                 style={styles.input}
                 placeholder="주제를 입력해주세요."
                 placeholderTextColor={placeholderTextColor}
+                value={title} // 상태값 연결
+                onChangeText={(text) => setTitle(text)} // 상태 업데이트
               />
             </View>
             <View style={styles.halfInputGroup}>
@@ -261,7 +273,60 @@ const CreateChallengeScreen = () => {
             />
           </View>
           {/* Submit Button */}
-          <TouchableOpacity style={styles.submitButton}>
+          <Modal
+            visible={isModalVisible}
+            transparent={true}
+            animationType="fade"
+            onRequestClose={() => setModalVisible(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContainer}>
+                <Text style={styles.modalTitle}>
+                  챌린지를 개설하시겠습니까?
+                </Text>
+
+                {/* 챌린지 요약 정보 */}
+                <View style={styles.summaryContainer}>
+                  <Text>챌린지 종류: {selectedType?.label || "미선택"}</Text>
+                  <Text>주제: {title || "미입력"}</Text>
+                  <Text>
+                    기간: {startDate || "시작 날짜 없음"} ~{" "}
+                    {endDate || "종료 날짜 없음"}
+                  </Text>
+                </View>
+
+                {/* 안내 문구 */}
+                <Text style={styles.modalDescription}>
+                  챌린지 개설 후에는 수정이 불가능합니다.
+                  {"\n"}챌린지 시작 전에는 삭제할 수 있습니다.
+                </Text>
+
+                {/* 버튼들 */}
+                <View style={styles.buttonContainer}>
+                  <TouchableOpacity
+                    style={styles.confirmButton}
+                    onPress={() => {
+                      // 개설 로직 추가
+                      setModalVisible(false);
+                    }}
+                  >
+                    <Text style={styles.buttonText}>개설하기</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={styles.cancelButton}
+                    onPress={() => setModalVisible(false)}
+                  >
+                    <Text style={styles.buttonText}>돌아가기</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </Modal>
+          <TouchableOpacity
+            style={styles.submitButton}
+            onPress={() => setModalVisible(true)}
+          >
             <Text style={styles.submitButtonText}>개설하기</Text>
           </TouchableOpacity>
         </View>
@@ -403,6 +468,55 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)", // 반투명 배경
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
+    width: "80%",
+    // height: 300,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    // paddingBottom: 20,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 20,
+  },
+  summaryContainer: {
+    marginBottom: 20,
+  },
+  modalDescription: {
+    height: 40,
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  buttonContainer: {
+    marginTop: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  confirmButton: {
+    backgroundColor: "#0C508B",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  cancelButton: {
+    backgroundColor: "#ccc",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: "#fff",
   },
 });
 
