@@ -10,6 +10,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 type RootStackParamList = {
   LoginNeedScreen: undefined;
   DMScreen: undefined;
+  TrainerProfile: undefined;
+  // 다른 필요한 스크린들도 여기에 추가
   Main: {
     screen?: string;
   };
@@ -25,7 +27,7 @@ export const TopHeader = () => {
     if (token) {
       // 프로필 화면으로 이동하는 로직 (아직 미구현)
     } else {
-      navigation.navigate("LoginNeedScreen");
+      navigation.navigate("TrainerProfile");
     }
   };
 

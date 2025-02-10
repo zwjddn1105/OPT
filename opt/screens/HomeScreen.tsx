@@ -432,7 +432,6 @@ const styles = StyleSheet.create({
   workoutStatsSection: {
     backgroundColor: "#f8f8f8",
     padding: 20,
-    // marginTop: 30,
     marginHorizontal: 20,
     borderRadius: 15,
     flexDirection: "row",

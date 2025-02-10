@@ -7,6 +7,7 @@ import SearchScreen from "../screens/SearchScreen";
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet } from "react-native";
 import { View } from "react-native";
+
 const Tab = createBottomTabNavigator();
 
 export const BottomTabNavigator = () => {
