@@ -31,6 +31,7 @@ const ManageChallengesScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [modalVisible, setModalVisible] = useState(false);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false); // 확인 모달 상태
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
     null
   );
@@ -42,6 +43,14 @@ const ManageChallengesScreen = () => {
       recruitmentPeriod: "2024.01.01 ~ 2024.12.31",
       targetAudience: "만 19세 ~ 39세 청년",
       support: "활동지원금 최대 300만원",
+    },
+    {
+      id: "2",
+      title: "환경보호 챌린지",
+      subtitle: "SAVE THE EARTH",
+      recruitmentPeriod: "2024.03.01 ~ 2024.06.30",
+      targetAudience: "전 연령",
+      support: "환경보호 키트 제공",
     },
     // 추가 더미 데이터...
   ]);
@@ -57,11 +66,16 @@ const ManageChallengesScreen = () => {
     setModalVisible(true);
   };
 
-  const deleteChallenge = (id: string) => {
-    setChallenges((prevChallenges) =>
-      prevChallenges.filter((challenge) => challenge.id !== id)
-    );
-    setModalVisible(false);
+  const deleteChallenge = () => {
+    if (selectedChallenge) {
+      setChallenges((prevChallenges) =>
+        prevChallenges.filter(
+          (challenge) => challenge.id !== selectedChallenge.id
+        )
+      );
+      setConfirmModalVisible(false);
+      setModalVisible(false);
+    }
   };
 
   const renderChallengeCard = (challenge: Challenge, index: number) => (
@@ -91,7 +105,7 @@ const ManageChallengesScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderModal = () => (
+  const renderMainModal = () => (
     <Modal
       animationType="fade"
       transparent={true}
@@ -112,9 +126,7 @@ const ManageChallengesScreen = () => {
           <TouchableOpacity
             style={[styles.modalButton, styles.deleteButton]}
             onPress={() => {
-              if (selectedChallenge) {
-                deleteChallenge(selectedChallenge.id);
-              }
+              setConfirmModalVisible(true); // 확인 모달 열기
             }}
           >
             <Text style={styles.modalButtonText}>챌린지 삭제하기</Text>
@@ -125,6 +137,36 @@ const ManageChallengesScreen = () => {
           >
             <Text style={styles.closeButtonText}>닫기</Text>
           </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderConfirmModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={confirmModalVisible}
+      onRequestClose={() => setConfirmModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, styles.confirmContent]}>
+          <Text style={styles.confirmMessage}>챌린지를 삭제하시겠습니까?</Text>
+
+          <View style={styles.confirmButtons}>
+            <TouchableOpacity
+              style={[styles.confirmButton, styles.deleteButton]}
+              onPress={() => deleteChallenge()}
+            >
+              <Text style={styles.confirmButtonText}>삭제</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.confirmButton, styles.cancelButton]}
+              onPress={() => setConfirmModalVisible(false)}
+            >
+              <Text style={styles.confirmButtonText}>닫기</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -159,7 +201,9 @@ const ManageChallengesScreen = () => {
           </View>
         </View>
       </ScrollView>
-      {renderModal()}
+
+      {renderMainModal()}
+      {renderConfirmModal()}
     </SafeAreaView>
   );
 };
@@ -293,6 +337,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    width: 300,
   },
   modalButton: {
     backgroundColor: "#0C508B",
@@ -311,12 +356,43 @@ const styles = StyleSheet.create({
     backgroundColor: "#FF0000",
   },
   closeButton: {
-    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#0C508B",
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center",
+    width: 200,
   },
   closeButtonText: {
     color: "#0C508B",
     fontWeight: "bold",
   },
+  confirmContent: {
+    alignItems: "center",
+  },
+  confirmMessage: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  confirmButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  confirmButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: "#999",
+  },
+  confirmButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 });
-
 export default ManageChallengesScreen;
