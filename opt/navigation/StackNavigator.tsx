@@ -7,7 +7,11 @@ import FoodScreen from "../screens/FoodScreen";
 import ManagerChatScreen from "../screens/chat/ManagerChatScreen";
 import TrainerChatScreen from "../screens/chat/TrainerChatScreen";
 import UserChatScreen from "../screens/chat/UserChatScreen";
-
+import OngoingChallengesScreen from "../screens/challenge/OngoingChallengesScreen";
+import AppliedChallengesScreen from "../screens/challenge/AppliedChallengesScreen";
+import PastChallengesScreen from "../screens/challenge/PastChallengesScreen";
+import ManageChallengeScreen from "../screens/challenge/ManageChallengeScreen";
+import CreateChallengeScreen from "../screens/challenge/CreateChallengeScreen";
 export type RootStackParamList = {
   Main: undefined;
   KakaoLogin: undefined;
@@ -17,6 +21,11 @@ export type RootStackParamList = {
   ManagerChat: undefined;
   TrainerChat: undefined;
   UserChat: undefined;
+  OngoingChallenges: undefined;
+  AppliedChallenges: undefined;
+  PastChallenges: undefined;
+  ManageChallenge: undefined;
+  CreateChallenge: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -32,6 +41,17 @@ export const StackNavigator = () => {
       <Stack.Screen name="ManagerChat" component={ManagerChatScreen} />
       <Stack.Screen name="TrainerChat" component={TrainerChatScreen} />
       <Stack.Screen name="UserChat" component={UserChatScreen} />
+      <Stack.Screen
+        name="OngoingChallenges"
+        component={OngoingChallengesScreen}
+      />
+      <Stack.Screen
+        name="AppliedChallenges"
+        component={AppliedChallengesScreen}
+      />
+      <Stack.Screen name="PastChallenges" component={PastChallengesScreen} />
+      <Stack.Screen name="ManageChallenge" component={ManageChallengeScreen} />
+      <Stack.Screen name="CreateChallenge" component={CreateChallengeScreen} />
     </Stack.Navigator>
   );
 };
