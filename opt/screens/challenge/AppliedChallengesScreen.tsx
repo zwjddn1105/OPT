@@ -1,46 +1,29 @@
-// MyChallengeScreen.tsx
-import React, { useState, useEffect } from "react";
+// AppliedChallengesScreen.tsx
+import React, { useState } from "react";
 import {
   View,
   Text,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
+  SafeAreaView,
+  TouchableOpacity,
 } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
-import { Switch } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { TopHeader } from "../../components/TopHeader";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 
-type RootStackParamList = {
-  LoginNeedScreen: undefined;
-  OngoingChallenges: undefined;
-  AppliedChallenges: undefined;
-  PastChallenges: undefined;
-  ManageChallenge: undefined;
-};
+type RootStackParamList = {};
 
-const MyChallengeScreen = () => {
+const AppliedChallengesScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isEnabled, setIsEnabled] = useState(true);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
-  const renderSectionHeader = (
-    title: string,
-    navigateTo: keyof RootStackParamList
-  ) => (
+  const renderSectionHeader = (title: string) => (
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate(navigateTo)}
-      >
-        <Text style={styles.addButtonText}>+</Text>
-      </TouchableOpacity>
     </View>
   );
 
@@ -50,11 +33,10 @@ const MyChallengeScreen = () => {
       <ScrollView style={styles.container}>
         <View style={styles.headerContainer}>
           <TouchableOpacity
-            style={styles.manageButton}
-            onPress={() => navigation.navigate("ManageChallenge")}
-            activeOpacity={0.8}
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
           >
-            <Text style={styles.manageButtonText}>챌린지 관리</Text>
+            <Ionicons name="chevron-back" size={24} color="black" />
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.toggleContainer}
@@ -84,43 +66,10 @@ const MyChallengeScreen = () => {
             </View>
           </TouchableOpacity>
         </View>
-        {/* 진행중인 챌린지 섹션 */}
-        <View style={styles.section}>
-          {renderSectionHeader("내가 진행중인 챌린지", "OngoingChallenges")}
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <View key={index} style={styles.challengeCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-                  <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
-                </View>
-                <View style={styles.cardContent}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>모집기간</Text>
-                    <Text style={styles.infoValue}>
-                      2024.01.01 ~ 2024.12.31
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원대상</Text>
-                    <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원내용</Text>
-                    <Text style={styles.infoValue}>
-                      활동지원금 최대 300만원
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
 
-        {/* 신청한 챌린지 섹션 */}
         <View style={styles.section}>
-          {renderSectionHeader("내가 신청한 챌린지", "AppliedChallenges")}
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
+          {renderSectionHeader("내가 신청한 챌린지")}
+          <View style={styles.cardContainer}>
             {Array.from({ length: 3 }).map((_, index) => (
               <View key={index} style={styles.challengeCard}>
                 <View style={styles.cardHeader}>
@@ -147,40 +96,7 @@ const MyChallengeScreen = () => {
                 </View>
               </View>
             ))}
-          </ScrollView>
-        </View>
-
-        {/* 참여했던 챌린지 섹션 */}
-        <View style={styles.section}>
-          {renderSectionHeader("내가 참여했던 챌린지", "PastChallenges")}
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <View key={index} style={styles.challengeCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-                  <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
-                </View>
-                <View style={styles.cardContent}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>모집기간</Text>
-                    <Text style={styles.infoValue}>
-                      2024.01.01 ~ 2024.12.31
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원대상</Text>
-                    <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원내용</Text>
-                    <Text style={styles.infoValue}>
-                      활동지원금 최대 300만원
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -225,9 +141,13 @@ const styles = StyleSheet.create({
     color: "#666",
     lineHeight: 24,
   },
+  cardContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
   challengeCard: {
-    width: 180,
-    marginRight: 12,
+    width: "48%",
     backgroundColor: "#fff",
     borderRadius: 15,
     padding: 16,
@@ -240,7 +160,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    marginBottom: 14,
   },
   cardHeader: {
     marginBottom: 20,
@@ -274,8 +194,6 @@ const styles = StyleSheet.create({
   toggleContainer: {
     width: 75,
     height: 30,
-    alignSelf: "flex-end",
-    marginRight: 20,
   },
   toggleTrack: {
     width: "100%",
@@ -322,25 +240,16 @@ const styles = StyleSheet.create({
   customToggleActive: {
     backgroundColor: "#0C508B",
   },
+  backButton: {
+    padding: 8,
+    marginLeft: 12,
+  },
   headerContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
+    justifyContent: "space-between",
     paddingRight: 20,
-    marginBottom: 10,
-  },
-  manageButton: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: "#0C508B",
-    borderRadius: 15,
-    marginRight: 12,
-  },
-  manageButtonText: {
-    fontSize: 14,
-    color: "#fff",
-    fontWeight: "500",
   },
 });
 
-export default MyChallengeScreen;
+export default AppliedChallengesScreen;
