@@ -7,9 +7,11 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Platform,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 
 interface Review {
   id: string;
@@ -57,6 +59,7 @@ const generateStars = (rating: number) => {
 };
 
 export const TrainerProfileScreen = () => {
+  const navigation = useNavigation();
   const trainer: TrainerProfile = {
     name: '김멸멸 Trainer',
     image: 'trainer_image_url',
@@ -92,23 +95,22 @@ export const TrainerProfileScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity>
-            <Ionicons name="chevron-back" size={24} color="black" />
+      <View style={styles.fixedHeader}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="chevron-back" size={24} color="black" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{trainer.name}</Text>
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.headerIcon}>
+            <Ionicons name="heart-outline" size={24} color="black" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{trainer.name}</Text>
-          <View style={styles.headerRight}>
-            <TouchableOpacity style={styles.headerIcon}>
-              <Ionicons name="heart-outline" size={24} color="black" />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.headerIcon}>
-              <Ionicons name="share-outline" size={24} color="black" />
-            </TouchableOpacity>
-          </View>
+          <TouchableOpacity style={styles.headerIcon}>
+            <Ionicons name="share-outline" size={24} color="black" />
+          </TouchableOpacity>
         </View>
+      </View>
 
+      <ScrollView style={styles.scrollView}>
         {/* Profile Section */}
         <View style={styles.profileSection}>
           <Image
@@ -209,17 +211,18 @@ export const TrainerProfileScreen = () => {
             </View>
           </TouchableOpacity>
         </View>
-
-        {/* Bottom Buttons */}
-        <View style={styles.bottomButtons}>
-          <TouchableOpacity style={styles.chatButton}>
-            <Text style={styles.buttonText}>채팅상담</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.scheduleButton}>
-            <Text style={styles.buttonText}>상담예약</Text>
-          </TouchableOpacity>
-        </View>
+        
+        <View style={styles.bottomPadding} />
       </ScrollView>
+
+      <View style={styles.fixedBottomButtons}>
+        <TouchableOpacity style={styles.chatButton}>
+          <Text style={styles.buttonText}>채팅상담</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.scheduleButton}>
+          <Text style={styles.buttonText}>상담예약</Text>
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -228,6 +231,44 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollView: {
+    flex: 1,
+    // 고정 헤더의 높이만큼 상단 패딩 추가
+    paddingTop: Platform.OS === 'ios' ? 88 : 56,
+  },
+  fixedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+    // iOS 상단 Safe Area 고려
+    paddingTop: Platform.OS === 'ios' ? 44 : 12,
+  },
+  bottomPadding: {
+    height: 80, // 하단 버튼 높이만큼 여백 추가
+  },
+  fixedBottomButtons: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    // iOS 하단 Safe Area 고려
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
   },
   header: {
     flexDirection: 'row',
