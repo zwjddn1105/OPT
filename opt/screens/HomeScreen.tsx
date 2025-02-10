@@ -109,12 +109,44 @@ const TabButton: React.FC<TabButtonProps> = ({
   </TouchableOpacity>
 );
 
+interface Schedule {
+  id: number;
+  nickname: string;
+  startTime: Date;
+  endTime: Date;
+}
+
+const TodaySchedule: React.FC<{ schedule: Schedule }> = ({ schedule }) => {
+  const formatTime = (date: Date) => {
+    return new Date(date).toLocaleTimeString('ko-KR', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    }).replace(/\s+/g, ' ');
+  };
+
+  return (
+    <View style={styles.todayScheduleContainer}>
+      <View style={styles.scheduleIconContainer}>
+        <View style={styles.scheduleIcon} />
+      </View>
+      <View style={styles.scheduleTextContainer}>
+        <Text style={styles.scheduleTitle}>{schedule.nickname}</Text>
+        <Text style={styles.scheduleTime}>
+          {formatTime(schedule.startTime)} - {formatTime(schedule.endTime)}
+        </Text>
+      </View>
+    </View>
+  );
+};
+
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [selectedSpecialty, setSelectedSpecialty] = useState("다이어트");
   const [selectedTab, setSelectedTab] = useState("nearby");
   const [streak, setStreak] = useState(0);
   const [weeklyWorkouts, setWeeklyWorkouts] = useState<string[]>([]);
+  const [todaySchedules, setTodaySchedules] = useState<Schedule[]>([]);
 
   const specialties = ["다이어트", "빌크업", "필라테스", "체형교정"];
 
@@ -163,9 +195,37 @@ const HomeScreen: React.FC = () => {
     }
   };
 
+  const loadTodaySchedules = async () => {
+    try {
+        const schedulesStr = await AsyncStorage.getItem('schedules');
+        if (schedulesStr) {
+            const allSchedules: Schedule[] = JSON.parse(schedulesStr);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const todaySchedules = allSchedules
+                .filter((schedule: Schedule) => {
+                    const scheduleDate = new Date(schedule.startTime);
+                    scheduleDate.setHours(0, 0, 0, 0);
+                    return scheduleDate.getTime() === today.getTime();
+                })
+                .sort((a: Schedule, b: Schedule) => {
+                    const timeA = new Date(a.startTime).getTime();
+                    const timeB = new Date(b.startTime).getTime();
+                    return timeA - timeB;
+                });
+
+            setTodaySchedules(todaySchedules);
+        }
+    } catch (error) {
+        console.error('Failed to load today schedules:', error);
+    }
+  };
+
   useFocusEffect(
     useCallback(() => {
       calculateWorkoutStats();
+      loadTodaySchedules();
     }, [])
   );
 
@@ -204,8 +264,20 @@ const HomeScreen: React.FC = () => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <TopHeader />
-
         <ScrollView style={styles.mainContent}>
+          {/* 오늘의 일정 섹션 */}
+          {todaySchedules.length > 0 && (
+            <View style={styles.todaySchedulesSection}>
+              <Text style={styles.todaySchedulesTitle}>
+                <Text style={styles.userName}>임시님</Text>, 오늘 일정이{' '}
+                <Text style={styles.scheduleCount}>{todaySchedules.length}건</Text> 있어요.
+              </Text>
+              {todaySchedules.map((schedule) => (
+                <TodaySchedule key={schedule.id} schedule={schedule} />
+              ))}
+            </View>
+          )}
+
           <View style={styles.workoutStatsSection}>
             <View style={styles.streakContainer}>
               <Text style={styles.streakNumber}>{streak}</Text>
@@ -477,6 +549,57 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     borderWidth: 1,
     borderColor: "#000",
+  },
+  userName: {
+    fontWeight: 'bold',
+  },
+  scheduleCount: {
+    color: '#0047FF',
+    fontWeight: 'bold',
+  },
+  todaySchedulesSection: {
+    backgroundColor: '#fff',
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  todaySchedulesTitle: {
+    fontSize: 18,
+    marginBottom: 15,
+    color: '#333',
+  },
+  todayScheduleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  scheduleIconContainer: {
+    width: 40,
+    height: 40,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  scheduleIcon: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#0047FF',
+  },
+  scheduleTextContainer: {
+    flex: 1,
+  },
+  scheduleTitle: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 4,
+  },
+  scheduleTime: {
+    fontSize: 14,
+    color: '#666',
   },
 });
 

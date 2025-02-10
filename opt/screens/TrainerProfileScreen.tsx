@@ -6,12 +6,19 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+  TrainerProfile: undefined;
+  Badge: undefined;
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface Review {
   id: string;
@@ -59,7 +66,7 @@ const generateStars = (rating: number) => {
 };
 
 export const TrainerProfileScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const trainer: TrainerProfile = {
     name: '김멸멸 Trainer',
     image: 'trainer_image_url',
@@ -94,19 +101,31 @@ export const TrainerProfileScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.fixedHeader}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{trainer.name}</Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerIcon}>
-            <Ionicons name="heart-outline" size={24} color="black" />
+        <View style={styles.statusBarPlaceholder} />
+        <View style={styles.headerContent}>
+          <TouchableOpacity 
+            style={styles.headerButton} 
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="chevron-back" size={24} color="black" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerIcon}>
-            <Ionicons name="share-outline" size={24} color="black" />
-          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{trainer.name}</Text>
+          <View style={styles.headerRight}>
+            <TouchableOpacity 
+              style={styles.headerIcon}
+              onPress={() => navigation.navigate('Badge')} // 'Badge'는 네비게이션에 등록된 화면 이름입니다
+            >
+              <MaterialIcons name="military-tech" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerIcon}>
+              <Ionicons name="heart-outline" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerIcon}>
+              <Ionicons name="share-outline" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -223,7 +242,7 @@ export const TrainerProfileScreen = () => {
           <Text style={styles.buttonText}>상담예약</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -232,52 +251,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  scrollView: {
-    flex: 1,
-    // 고정 헤더의 높이만큼 상단 패딩 추가
-    paddingTop: Platform.OS === 'ios' ? 88 : 56,
-  },
   fixedHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    // iOS 상단 Safe Area 고려
-    paddingTop: Platform.OS === 'ios' ? 44 : 12,
   },
-  bottomPadding: {
-    height: 80, // 하단 버튼 높이만큼 여백 추가
+  statusBarPlaceholder: {
+    height: StatusBar.currentHeight || 0,  // 안드로이드 상태 바 높이
   },
-  fixedBottomButtons: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    // iOS 하단 Safe Area 고려
-    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
-  },
-  header: {
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    paddingHorizontal: 15,
+    height: 50,
+  },
+  headerButton: {
+    padding: 5,
   },
   headerTitle: {
     fontSize: 18,
@@ -285,9 +275,16 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingRight: 5,
   },
   headerIcon: {
-    marginLeft: 16,
+    padding: 5,
+    marginLeft: 10,
+  },
+  scrollView: {
+    flex: 1,
   },
   profileSection: {
     alignItems: 'center',
@@ -427,11 +424,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  bottomButtons: {
+  bottomPadding: {
+    height: 80,
+  },
+  fixedBottomButtons: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     padding: 16,
+    backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#eee',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
   },
   chatButton: {
     flex: 1,

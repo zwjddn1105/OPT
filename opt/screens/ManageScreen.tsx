@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -13,6 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { TopHeader } from "../components/TopHeader";
 import PlusButton from '../components/PlusButton';
 import { AddScheduleModal } from '../components/AddScheduleModal';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 interface Schedule {
   id: number;
@@ -43,6 +44,13 @@ interface TicketCard {
 interface Props {
   navigation: any;
   route: any;
+}
+
+interface Schedule {
+  id: number;
+  nickname: string;
+  startTime: Date;
+  endTime: Date;
 }
 
 export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
@@ -126,6 +134,24 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
     },
   ]);
 
+  const loadSchedules = async () => {
+    try {
+      const savedSchedules = await AsyncStorage.getItem('schedules');
+      if (savedSchedules) {
+        const parsedSchedules = JSON.parse(savedSchedules);
+        // Date 문자열을 Date 객체로 변환
+        const schedulesWithDates = parsedSchedules.map((schedule: Schedule) => ({
+          ...schedule,
+          startTime: new Date(schedule.startTime),
+          endTime: new Date(schedule.endTime)
+        }));
+        setSchedules(schedulesWithDates);
+      }
+    } catch (error) {
+      console.error('Failed to load schedules:', error);
+    }
+  };
+
   // 시간 표시 형식 포맷팅
   const formatScheduleTime = (startTime: Date, endTime: Date) => {
     const formatTime = (date: Date) => {
@@ -146,7 +172,8 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   // 일정 필터링
-  const filteredSchedules = schedules.filter(schedule => {
+  const filteredSchedules = schedules
+  .filter((schedule: Schedule) => {
     const startDate = new Date(schedule.startTime);
     const endDate = new Date(schedule.endTime);
     const checkDate = new Date(selectedDate);
@@ -158,20 +185,13 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
 
     // 선택한 날짜가 시작일과 종료일 사이에 있는지 확인
     return checkDate >= startDate && checkDate <= endDate;
+  })
+  .sort((a: Schedule, b: Schedule) => {
+    // 시작 시간을 기준으로 정렬
+    const timeA = new Date(a.startTime).getTime();
+    const timeB = new Date(b.startTime).getTime();
+    return timeA - timeB;
   });
-
-  // 주간 날짜 계산
-  const getWeekDates = (date: Date): Date[] => {
-    const week: Date[] = [];
-    const start = new Date(date);
-    
-    for (let i = 0; i < 7; i++) {
-      const day = new Date(start);
-      day.setDate(start.getDate() + i);
-      week.push(day);
-    }
-    return week;
-  };
 
   // 요일 이름
   const getDayName = (date: Date): string => {
@@ -193,18 +213,32 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
   };
 
   // 새로운 일정 추가
-  const handleScheduleSubmit = (scheduleData: { 
+  const handleScheduleSubmit = async (scheduleData: { 
     nickname: string; 
     startTime: Date;
     endTime: Date;
   }) => {
-    const newSchedule: Schedule = {
-      id: schedules.length + 1,
-      nickname: scheduleData.nickname,
-      startTime: scheduleData.startTime,
-      endTime: scheduleData.endTime,
-    };
-    setSchedules([...schedules, newSchedule]);
+    try {
+      const newSchedule: Schedule = {
+        id: schedules.length + 1,
+        nickname: scheduleData.nickname,
+        startTime: scheduleData.startTime,
+        endTime: scheduleData.endTime,
+      };
+
+      const updatedSchedules = [...schedules, newSchedule];
+      
+      // AsyncStorage에 저장
+      await AsyncStorage.setItem('schedules', JSON.stringify(updatedSchedules));
+      
+      // 상태 업데이트
+      setSchedules(updatedSchedules);
+      
+      // 모달 닫기
+      setIsModalVisible(false);
+    } catch (error) {
+      console.error('Failed to save schedule:', error);
+    }
   };
 
   // 날짜 선택
@@ -236,6 +270,25 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
     }
     return dates;
   }, [today]); // today만 의존성으로 추가
+
+  const handleDeleteSchedule = async (scheduleId: number) => {
+    try {
+      // 해당 일정을 제외한 새로운 배열 생성
+      const updatedSchedules = schedules.filter(schedule => schedule.id !== scheduleId);
+      
+      // AsyncStorage 업데이트
+      await AsyncStorage.setItem('schedules', JSON.stringify(updatedSchedules));
+      
+      // 상태 업데이트
+      setSchedules(updatedSchedules);
+    } catch (error) {
+      console.error('Failed to delete schedule:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadSchedules();
+  }, []);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -286,6 +339,12 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
                     {formatScheduleTime(schedule.startTime, schedule.endTime)}
                   </Text>
                 </View>
+                <TouchableOpacity 
+                  style={styles.deleteButton}
+                  onPress={() => handleDeleteSchedule(schedule.id)}
+                >
+                  <Ionicons name="close-circle" size={24} color="#FF6B6B" />
+                </TouchableOpacity>
               </View>
             ))}
 
@@ -503,17 +562,16 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
                   ))}
               </ScrollView>
             </View>
-
-            {/* 일정 추가 모달 */}
-            <AddScheduleModal
-              visible={isModalVisible}
-              onClose={() => setIsModalVisible(false)}
-              onSubmit={handleScheduleSubmit}
-              selectedDate={selectedDate}
-            />
           </View>
         </ScrollView>
       </View>
+      {/* 일정 추가 모달 */}
+      <AddScheduleModal
+          visible={isModalVisible}
+          onClose={() => setIsModalVisible(false)}
+          onSubmit={handleScheduleSubmit}
+          selectedDate={selectedDate}
+        />
     </SafeAreaView>
   );
 };
@@ -572,6 +630,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 15,
+    backgroundColor: '#ffffff',
+    borderRadius: 8,
+    marginVertical: 4,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
   },
   scheduleMarker: {
     width: 10,
@@ -591,6 +660,9 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 4,
+  },
+  deleteButton: {
+    padding: 8,
   },
   plusButtonWrapper: {
     alignItems: 'flex-end',

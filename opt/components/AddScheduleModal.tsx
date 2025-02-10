@@ -4,11 +4,25 @@ import {
   Text,
   Modal,
   TouchableOpacity,
-  StyleSheet,
   TextInput,
   ScrollView,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  LayoutAnimation,
+  UIManager,
+  StyleSheet,
 } from 'react-native';
+
+// Android에서 LayoutAnimation 활성화
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const DEFAULT_HEIGHT = SCREEN_HEIGHT * 0.56;
+const EXPANDED_HEIGHT = SCREEN_HEIGHT * 0.85;
 
 interface AddScheduleModalProps {
   visible: boolean;
@@ -37,90 +51,131 @@ export const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
   selectedDate,
 }) => {
   const slideAnim = useRef(new Animated.Value(0)).current;
-  const [isHiding, setIsHiding] = useState(false);
-
-  // 시간 옵션 배열
-  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
-  const minutes = Array.from({ length: 6 }, (_, i) => (i * 10).toString().padStart(2, '0'));
-  const periods = ['AM', 'PM'];
-
-  // 초기 시간 설정을 위한 함수들
-  const getInitialTime = () => {
-    const now = new Date();
-    now.setHours(now.getHours() + 1);
-    now.setMinutes(Math.round(now.getMinutes() / 10) * 10);
-    return now;
-  };
-
-  const getTimeComponents = (date: Date) => {
-    let hours = date.getHours();
-    const period = hours >= 12 ? 'PM' : 'AM';
-    
-    if (hours > 12) hours -= 12;
-    if (hours === 0) hours = 12;
-    
-    return {
-      hour: hours.toString().padStart(2, '0'),
-      minute: date.getMinutes().toString().padStart(2, '0'),
-      period
-    };
-  };
-
-  // 초기 시작/종료 시간 설정
-  const initialStartTime = useRef(getInitialTime()).current;
-  const initialEndTime = useRef(new Date(initialStartTime.getTime() + 60 * 60 * 1000)).current;
+  const [modalHeight, setModalHeight] = useState(DEFAULT_HEIGHT);
+  const nicknameInputRef = useRef<TextInput>(null);
   
-  const initialStart = getTimeComponents(initialStartTime);
-  const initialEnd = getTimeComponents(initialEndTime);
-
   // 상태 관리
   const [nickname, setNickname] = useState('');
   const [showStartTimePicker, setShowStartTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   
-  const [selectedStartHour, setSelectedStartHour] = useState(initialStart.hour);
-  const [selectedStartMinute, setSelectedStartMinute] = useState(initialStart.minute);
-  const [selectedStartPeriod, setSelectedStartPeriod] = useState(initialStart.period);
-  
-  const [selectedEndHour, setSelectedEndHour] = useState(initialEnd.hour);
-  const [selectedEndMinute, setSelectedEndMinute] = useState(initialEnd.minute);
-  const [selectedEndPeriod, setSelectedEndPeriod] = useState(initialEnd.period);
+  // 초기 시간값 설정 함수
+  const getInitialTimeValues = () => {
+    const now = new Date();
+    
+    // 10분 단위로 올림 처리
+    const currentMinutes = now.getMinutes();
+    const ceiledMinutes = Math.ceil(currentMinutes / 10) * 10;
+    
+    // 분이 올림되어 60이 되면 시간을 1 증가
+    let additionalHours = 0;
+    if (ceiledMinutes === 60) {
+      additionalHours = 1;
+    }
 
-  // 애니메이션 효과
+    // 시작 시간 설정
+    const startTime = new Date(now);
+    startTime.setMinutes(ceiledMinutes % 60);
+    startTime.setHours(now.getHours() + additionalHours);
+
+    // 종료 시간은 시작 시간 + 1시간
+    const endTime = new Date(startTime.getTime() + 60 * 60 * 1000);
+
+    // 시작 시간 12시간 형식 변환
+    let startHour = startTime.getHours();
+    const startPeriod = startHour >= 12 ? 'PM' : 'AM';
+    startHour = startHour % 12 || 12;
+
+    // 종료 시간 12시간 형식 변환
+    let endHour = endTime.getHours();
+    const endPeriod = endHour >= 12 ? 'PM' : 'AM';
+    endHour = endHour % 12 || 12;
+
+    return {
+      startHour: startHour.toString().padStart(2, '0'),
+      startMinute: (startTime.getMinutes()).toString().padStart(2, '0'),
+      startPeriod,
+      endHour: endHour.toString().padStart(2, '0'),
+      endMinute: (endTime.getMinutes()).toString().padStart(2, '0'),
+      endPeriod,
+    };
+  };
+
+  // 현재 시간으로 초기값 설정
+  const initialTime = getInitialTimeValues();
+  const [selectedStartHour, setSelectedStartHour] = useState(initialTime.startHour);
+  const [selectedStartMinute, setSelectedStartMinute] = useState(initialTime.startMinute);
+  const [selectedStartPeriod, setSelectedStartPeriod] = useState(initialTime.startPeriod);
+  
+  const [selectedEndHour, setSelectedEndHour] = useState(initialTime.endHour);
+  const [selectedEndMinute, setSelectedEndMinute] = useState(initialTime.endMinute);
+  const [selectedEndPeriod, setSelectedEndPeriod] = useState(initialTime.endPeriod);
+
+  // 모달이 열릴 때마다 시간 초기화
   useEffect(() => {
     if (visible) {
-      setIsHiding(false);
+      const initialTime = getInitialTimeValues();
+      setSelectedStartHour(initialTime.startHour);
+      setSelectedStartMinute(initialTime.startMinute);
+      setSelectedStartPeriod(initialTime.startPeriod);
+      setSelectedEndHour(initialTime.endHour);
+      setSelectedEndMinute(initialTime.endMinute);
+      setSelectedEndPeriod(initialTime.endPeriod);
+    }
+  }, [visible]);
+
+  const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
+  const minutes = Array.from({ length: 6 }, (_, i) => (i * 10).toString().padStart(2, '0'));
+  const periods = ['AM', 'PM'];
+
+  useEffect(() => {
+    if (visible) {
       Animated.timing(slideAnim, {
         toValue: 1,
         duration: 300,
         useNativeDriver: true,
       }).start();
+    } else {
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+      // 모달이 닫힐 때 상태 초기화
+      setShowStartTimePicker(false);
+      setShowEndTimePicker(false);
     }
   }, [visible]);
 
-  const hideModal = () => {
-    setIsHiding(true);
-    Animated.timing(slideAnim, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      setIsHiding(false);
-      onClose();
+  useEffect(() => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (showStartTimePicker || showEndTimePicker) {
+      setModalHeight(EXPANDED_HEIGHT);
+    } else {
+      setModalHeight(DEFAULT_HEIGHT);
+    }
+  }, [showStartTimePicker, showEndTimePicker]);
+
+  const handleSubmit = () => {
+    if (!nickname.trim()) {
+      nicknameInputRef.current?.focus();
+      return;
+    }
+
+    const startTime = getTimeAsDate(selectedStartHour, selectedStartMinute, selectedStartPeriod);
+    const endTime = getTimeAsDate(selectedEndHour, selectedEndMinute, selectedEndPeriod, true);
+
+    onSubmit({
+      nickname,
+      startTime,
+      endTime,
     });
+
+    setNickname('');
+    onClose();
   };
-
-  const opacity = slideAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [0, 0.5]
-  });
-
-  const translateY = slideAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: [800, 0]
-  });
-
-  // 시간 변환 함수들
+  
+  // 시간 변환 함수
   const convertTo24Hour = (hour: string, period: string) => {
     let hour24 = parseInt(hour);
     if (period === 'PM' && hour24 !== 12) hour24 += 12;
@@ -155,25 +210,6 @@ export const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
     if (hours === 0) hours = 12;
     
     return `${hours.toString().padStart(2, '0')}:${minutes} ${period}`;
-  };
-
-  const handleSubmit = () => {
-    if (!nickname.trim()) {
-      alert('이름을 입력해주세요');
-      return;
-    }
-
-    const startTime = getTimeAsDate(selectedStartHour, selectedStartMinute, selectedStartPeriod);
-    const endTime = getTimeAsDate(selectedEndHour, selectedEndMinute, selectedEndPeriod, true);
-
-    onSubmit({
-      nickname,
-      startTime,
-      endTime,
-    });
-
-    setNickname('');
-    hideModal();
   };
 
   // TimePicker 컴포넌트
@@ -282,35 +318,33 @@ export const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
     );
   };
 
-  if (!visible && !isHiding) return null;
-
   return (
     <Modal
       transparent={true}
-      visible={visible || isHiding}
-      onRequestClose={hideModal}
-      animationType="none"
+      visible={visible}
+      onRequestClose={onClose}
+      animationType="fade"
     >
-      <View style={StyleSheet.absoluteFill}>
-        <Animated.View 
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              backgroundColor: 'black',
-              opacity: opacity
-            }
-          ]} 
-        />
-        <TouchableOpacity 
-          style={styles.touchableOverlay}
-          activeOpacity={1} 
-          onPress={hideModal}
+      <TouchableOpacity 
+        style={styles.overlay} 
+        activeOpacity={1} 
+        onPress={onClose}
+      >
+        <KeyboardAvoidingView 
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={styles.keyboardAvoidingView}
         >
           <Animated.View 
             style={[
               styles.modalView,
               {
-                transform: [{ translateY }]
+                height: modalHeight,
+                transform: [{
+                  translateY: slideAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [EXPANDED_HEIGHT, 0]
+                  })
+                }]
               }
             ]}
           >
@@ -319,15 +353,16 @@ export const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
               onPress={(e) => e.stopPropagation()}
               style={styles.modalContainer}
             >
-              <View style={styles.modalContent}>
-                {/* 헤더 */}
-                <View style={styles.header}>
-                  <Text style={styles.modalTitle}>일정 추가</Text>
-                  <TouchableOpacity onPress={hideModal} style={styles.closeButton}>
-                    <Text style={styles.closeButtonText}>✕</Text>
-                  </TouchableOpacity>
-                </View>
-
+              {/* 헤더 */}
+              <View style={styles.header}>
+                <Text style={styles.modalTitle}>일정 추가</Text>
+                <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+                  <Text style={styles.closeButtonText}>✕</Text>
+                </TouchableOpacity>
+              </View>
+  
+              {/* 스크롤 가능한 콘텐츠 영역 */}
+              <View style={styles.contentContainer}>
                 {/* 날짜 */}
                 <View style={styles.formGroup}>
                   <Text style={styles.label}>날짜</Text>
@@ -347,6 +382,7 @@ export const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
                   <Text style={styles.label}>이름</Text>
                   <View style={styles.inputContainer}>
                     <TextInput
+                      ref={nicknameInputRef}
                       style={styles.input}
                       value={nickname}
                       onChangeText={setNickname}
@@ -388,45 +424,33 @@ export const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
                   </TouchableOpacity>
                 </View>
 
-                {/* 시작 시간 선택 UI */}
-                {showStartTimePicker && (
+                {/* 시간 선택 UI */}
+                {(showStartTimePicker || showEndTimePicker) && (
                   <View style={styles.timePickerContainer}>
                     <View style={styles.timePickerHeader}>
-                      <TouchableOpacity onPress={() => setShowStartTimePicker(false)}>
+                      <TouchableOpacity 
+                        onPress={() => {
+                          setShowStartTimePicker(false);
+                          setShowEndTimePicker(false);
+                        }}
+                      >
                         <Text style={styles.doneButtonText}>완료</Text>
                       </TouchableOpacity>
                     </View>
                     <TimePicker
-                      selectedHour={selectedStartHour}
-                      selectedMinute={selectedStartMinute}
-                      selectedPeriod={selectedStartPeriod}
-                      onHourChange={setSelectedStartHour}
-                      onMinuteChange={setSelectedStartMinute}
-                      onPeriodChange={setSelectedStartPeriod}
+                      selectedHour={showStartTimePicker ? selectedStartHour : selectedEndHour}
+                      selectedMinute={showStartTimePicker ? selectedStartMinute : selectedEndMinute}
+                      selectedPeriod={showStartTimePicker ? selectedStartPeriod : selectedEndPeriod}
+                      onHourChange={showStartTimePicker ? setSelectedStartHour : setSelectedEndHour}
+                      onMinuteChange={showStartTimePicker ? setSelectedStartMinute : setSelectedEndMinute}
+                      onPeriodChange={showStartTimePicker ? setSelectedStartPeriod : setSelectedEndPeriod}
                     />
                   </View>
                 )}
-
-                {/* 종료 시간 선택 UI */}
-                {showEndTimePicker && (
-                  <View style={styles.timePickerContainer}>
-                    <View style={styles.timePickerHeader}>
-                      <TouchableOpacity onPress={() => setShowEndTimePicker(false)}>
-                        <Text style={styles.doneButtonText}>완료</Text>
-                      </TouchableOpacity>
-                    </View>
-                    <TimePicker
-                      selectedHour={selectedEndHour}
-                      selectedMinute={selectedEndMinute}
-                      selectedPeriod={selectedEndPeriod}
-                      onHourChange={setSelectedEndHour}
-                      onMinuteChange={setSelectedEndMinute}
-                      onPeriodChange={setSelectedEndPeriod}
-                    />
-                  </View>
-                )}
-
-                {/* 추가 버튼 */}
+              </View>
+  
+              {/* 하단 버튼 */}
+              <View style={styles.buttonContainer}>
                 <TouchableOpacity
                   style={styles.submitButton}
                   onPress={handleSubmit}
@@ -436,41 +460,51 @@ export const AddScheduleModal: React.FC<AddScheduleModalProps> = ({
               </View>
             </TouchableOpacity>
           </Animated.View>
-        </TouchableOpacity>
-      </View>
+        </KeyboardAvoidingView>
+      </TouchableOpacity>
     </Modal>
   );
 };
 
-const styles = StyleSheet.create({
-  touchableOverlay: {
+export const styles = StyleSheet.create({
+  overlay: {
     flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
+  },
+  keyboardAvoidingView: {
+    justifyContent: 'flex-end',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollViewContent: {
+    padding: 20,
   },
   modalView: {
     backgroundColor: 'white',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    maxHeight: '90%',
     width: '100%',
-    overflow: 'hidden',
   },
   modalContainer: {
     flex: 1,
+    flexDirection: 'column',
   },
   modalContent: {
-    backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
     padding: 20,
-    paddingBottom: 34,
+  },
+  contentContainer: {
+    flex: 1,
+    padding: 20,
+    paddingTop: 0,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
-    position: 'relative',
+    padding: 20,
+    paddingBottom: 16,
   },
   modalTitle: {
     fontSize: 18,
@@ -479,8 +513,7 @@ const styles = StyleSheet.create({
   },
   closeButton: {
     position: 'absolute',
-    right: 0,
-    top: 0,
+    right: 20,
     padding: 5,
   },
   closeButtonText: {
@@ -488,7 +521,7 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   formGroup: {
-    marginBottom: 24,
+    marginBottom: 20, 
   },
   label: {
     fontSize: 15,
@@ -570,16 +603,36 @@ const styles = StyleSheet.create({
     color: '#666',
     paddingHorizontal: 10,
   },
+  buttonContainer: {
+    padding: 20,
+    paddingTop: 0,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+  },
+  bottomButtonContainer: {
+    padding: 20,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 20,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+    backgroundColor: 'white',
+  },
   submitButton: {
     backgroundColor: '#0047FF',
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
-    marginTop: 8,
   },
   submitButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+  },
+  submitButtonWithPicker: {
+    marginTop: 'auto',
+  },
+  saveButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+  saveButtonTextDisabled: {
+    color: '#999',
   },
 });
