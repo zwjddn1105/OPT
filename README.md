@@ -17,6 +17,9 @@ npx expo install @react-native-community/datetimepicker
 혹시 버전관련 오류뜰 때
 npx expo install --fix
 
+도커 로컬에서 돌리기
+docker-compose up -d --build
+
 # Trouble Shooting
 
 - Web Bundling failed 469ms index.ts (828 modules)
