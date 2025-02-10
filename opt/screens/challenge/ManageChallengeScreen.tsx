@@ -1,3 +1,4 @@
+// ManageChallengeScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -17,11 +18,33 @@ type RootStackParamList = {
   CreateChallenge: undefined;
 };
 
+type Challenge = {
+  id: string;
+  title: string;
+  subtitle: string;
+  recruitmentPeriod: string;
+  targetAudience: string;
+  support: string;
+};
+
 const ManageChallengesScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
+    null
+  );
+  const [challenges, setChallenges] = useState<Challenge[]>([
+    {
+      id: "1",
+      title: "서울시 청년도전 지원사업",
+      subtitle: "X-CHALLENGE SEOUL",
+      recruitmentPeriod: "2024.01.01 ~ 2024.12.31",
+      targetAudience: "만 19세 ~ 39세 청년",
+      support: "활동지원금 최대 300만원",
+    },
+    // 추가 더미 데이터...
+  ]);
 
   const renderSectionHeader = (title: string) => (
     <View style={styles.sectionHeader}>
@@ -29,33 +52,40 @@ const ManageChallengesScreen = () => {
     </View>
   );
 
-  const openModal = (challenge: any) => {
+  const openModal = (challenge: Challenge) => {
     setSelectedChallenge(challenge);
     setModalVisible(true);
   };
 
-  const renderChallengeCard = (challenge: any, index: any) => (
+  const deleteChallenge = (id: string) => {
+    setChallenges((prevChallenges) =>
+      prevChallenges.filter((challenge) => challenge.id !== id)
+    );
+    setModalVisible(false);
+  };
+
+  const renderChallengeCard = (challenge: Challenge, index: number) => (
     <TouchableOpacity
-      key={index}
+      key={challenge.id}
       style={styles.challengeCard}
       onPress={() => openModal(challenge)}
     >
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-        <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
+        <Text style={styles.cardTitle}>{challenge.title}</Text>
+        <Text style={styles.cardSubtitle}>{challenge.subtitle}</Text>
       </View>
       <View style={styles.cardContent}>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>모집기간</Text>
-          <Text style={styles.infoValue}>2024.01.01 ~ 2024.12.31</Text>
+          <Text style={styles.infoValue}>{challenge.recruitmentPeriod}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>지원대상</Text>
-          <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
+          <Text style={styles.infoValue}>{challenge.targetAudience}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>지원내용</Text>
-          <Text style={styles.infoValue}>활동지원금 최대 300만원</Text>
+          <Text style={styles.infoValue}>{challenge.support}</Text>
         </View>
       </View>
     </TouchableOpacity>
@@ -63,7 +93,7 @@ const ManageChallengesScreen = () => {
 
   const renderModal = () => (
     <Modal
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
@@ -82,8 +112,9 @@ const ManageChallengesScreen = () => {
           <TouchableOpacity
             style={[styles.modalButton, styles.deleteButton]}
             onPress={() => {
-              // 삭제 로직
-              setModalVisible(false);
+              if (selectedChallenge) {
+                deleteChallenge(selectedChallenge.id);
+              }
             }}
           >
             <Text style={styles.modalButtonText}>챌린지 삭제하기</Text>
@@ -122,8 +153,8 @@ const ManageChallengesScreen = () => {
         <View style={styles.section}>
           {renderSectionHeader("내가 오픈 예정인 챌린지")}
           <View style={styles.cardContainer}>
-            {Array.from({ length: 3 }).map((_, index) =>
-              renderChallengeCard(_, index)
+            {challenges.map((challenge, index) =>
+              renderChallengeCard(challenge, index)
             )}
           </View>
         </View>
