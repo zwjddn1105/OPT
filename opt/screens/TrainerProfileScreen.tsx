@@ -6,12 +6,20 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Dimensions,
   Platform,
+  StatusBar,
 } from 'react-native';
 import { Ionicons, MaterialIcons } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+
+type RootStackParamList = {
+  TrainerProfile: undefined;
+  Badge: undefined;
+  Setting: undefined;
+};
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface Review {
   id: string;
@@ -40,6 +48,7 @@ interface TrainerProfile {
     };
   };
   rating: number;
+  interests: string[];
   reviews: Review[];
 }
 
@@ -59,7 +68,7 @@ const generateStars = (rating: number) => {
 };
 
 export const TrainerProfileScreen = () => {
-  const navigation = useNavigation();
+  const navigation = useNavigation<NavigationProp>();
   const trainer: TrainerProfile = {
     name: '김멸멸 Trainer',
     image: 'trainer_image_url',
@@ -79,6 +88,7 @@ export const TrainerProfileScreen = () => {
       }
     },
     rating: 4.7,
+    interests: ['스쿼트', '벤치프레스', '빌딩업'],
     reviews: [
       {
         id: '1',
@@ -88,35 +98,71 @@ export const TrainerProfileScreen = () => {
           image: 'user_image_url'
         },
         rating: 4,
-        content: '너무 맞는는 선생님이에요. 컨디션 글러스를 잃은 이후 10년째 이 선생님과 운동중입니다. 다들 추천해요!'
+        content: '너무 맞는 선생님이에요. 컨디션 글러스를 잃은 이후 10년째 이 선생님과 운동중입니다. 다들 추천해요!'
       }
     ]
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.fixedHeader}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{trainer.name}</Text>
-        <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.headerIcon}>
-            <Ionicons name="heart-outline" size={24} color="black" />
+        <View style={styles.statusBarPlaceholder} />
+        <View style={styles.headerContent}>
+          <TouchableOpacity 
+            style={styles.headerButton} 
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="chevron-back" size={24} color="black" />
           </TouchableOpacity>
-          <TouchableOpacity style={styles.headerIcon}>
-            <Ionicons name="share-outline" size={24} color="black" />
-          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{trainer.name}</Text>
+          <View style={styles.headerRight}>
+          <TouchableOpacity 
+              style={styles.headerIcon}
+              onPress={() => navigation.navigate('Badge')}
+            >
+              <MaterialIcons name="military-tech" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.headerIcon}>
+              <Ionicons name="heart-outline" size={24} color="black" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.headerIcon}
+              onPress={() => navigation.navigate('Setting')}
+            >
+              <Ionicons name="settings-outline" size={24} color="black" />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
       <ScrollView style={styles.scrollView}>
         {/* Profile Section */}
         <View style={styles.profileSection}>
-          <Image
-            source={{ uri: '/api/placeholder/120/120' }}
-            style={styles.profileImage}
-          />
+          <View style={styles.profileImageContainer}>
+            <Image
+              source={require("../assets/trainer-placeholder.png")}
+              style={styles.profileImage}
+            />
+            <View style={styles.badgeOverlay} />
+          </View>
+
+          <Text style={styles.profileName}>{trainer.name}</Text>
+
+          <View style={styles.locationContainer}>
+            <Ionicons name="location-outline" size={18} color="#666" />
+            <Text style={styles.locationText}>서울시 강남구</Text>
+          </View>
+
+          <TouchableOpacity style={styles.ratingContainer}>
+            <View style={styles.ratingInner}>
+              <Text style={styles.ratingNumber}>{trainer.rating}</Text>
+              <View style={styles.starsContainer}>
+                {generateStars(trainer.rating)}
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* 팔로워/팔로잉 */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{trainer.followers}</Text>
@@ -127,12 +173,18 @@ export const TrainerProfileScreen = () => {
               <Text style={styles.statLabel}>팔로잉</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.followButton}>
-            <Text style={styles.followButtonText}>팔로우</Text>
-          </TouchableOpacity>
+
+          {/* 관심사 태그 */}
+          <View style={styles.interestsContainer}>
+            {trainer.interests.map((interest, index) => (
+              <View key={index} style={styles.interestTag}>
+                <Text style={styles.interestText}>{interest}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
-        {/* Certification Section */}
+        {/* 자격/학력 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>자격, 학력 자유로운 폼 (자기소개포함)</Text>
           <Text style={styles.certificationText}>{trainer.certification}</Text>
@@ -223,7 +275,7 @@ export const TrainerProfileScreen = () => {
           <Text style={styles.buttonText}>상담예약</Text>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -232,52 +284,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  scrollView: {
-    flex: 1,
-    // 고정 헤더의 높이만큼 상단 패딩 추가
-    paddingTop: Platform.OS === 'ios' ? 88 : 56,
-  },
   fixedHeader: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
-    // iOS 상단 Safe Area 고려
-    paddingTop: Platform.OS === 'ios' ? 44 : 12,
   },
-  bottomPadding: {
-    height: 80, // 하단 버튼 높이만큼 여백 추가
+  statusBarPlaceholder: {
+    height: StatusBar.currentHeight || 0,  // 안드로이드 상태 바 높이
   },
-  fixedBottomButtons: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    padding: 16,
-    backgroundColor: '#fff',
-    borderTopWidth: 1,
-    borderTopColor: '#eee',
-    // iOS 하단 Safe Area 고려
-    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
-  },
-  header: {
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    paddingHorizontal: 15,
+    height: 50,
+  },
+  headerButton: {
+    padding: 5,
   },
   headerTitle: {
     fontSize: 18,
@@ -285,19 +308,42 @@ const styles = StyleSheet.create({
   },
   headerRight: {
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    paddingRight: 5,
   },
   headerIcon: {
-    marginLeft: 16,
+    padding: 5,
+    marginLeft: 10,
+  },
+  scrollView: {
+    flex: 1,
   },
   profileSection: {
     alignItems: 'center',
     padding: 20,
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  profileImageContainer: {
+    width: 160,
+    height: 160,
     marginBottom: 16,
+    position: 'relative',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+  },
+  badgeOverlay: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    backgroundColor: '#E0E0E0',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -362,15 +408,20 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 16,
+    marginBottom: 16,
+  },
+  ratingInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   ratingNumber: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
-    marginRight: 8,
   },
   starsContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
   },
   reviewItem: {
     marginBottom: 16,
@@ -427,11 +478,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-  bottomButtons: {
+  bottomPadding: {
+    height: 80,
+  },
+  fixedBottomButtons: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
     padding: 16,
+    backgroundColor: '#fff',
     borderTopWidth: 1,
     borderTopColor: '#eee',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 16,
   },
   chatButton: {
     flex: 1,
@@ -452,6 +512,48 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  badgeText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: '#666',
+  },
+  interestsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  interestTag: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  interestText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 4,
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 14, // 텍스트의 lineHeight를 아이콘 크기와 동일하게 설정
   },
 });
 
