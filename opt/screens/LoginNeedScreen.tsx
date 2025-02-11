@@ -1,20 +1,72 @@
-import React, { useRef, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  TextInput,
+  Alert,
+} from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Video, ResizeMode } from "expo-av";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 
 type RootStackParamList = {
+  홈: undefined;
+  MyChallenge: undefined;
   KakaoLogin: undefined;
+  Main: { screen?: string };
+  LoginNeedScreen: { returnScreen: string } | undefined;
 };
 
 type LoginNeedScreenNavigationProp =
   NativeStackNavigationProp<RootStackParamList>;
 
-const LoginNeedScreen = () => {
+type LoginNeedScreenRouteParams = {
+  returnScreen?: string;
+};
+
+const LoginNeedScreen: React.FC = () => {
+  const route =
+    useRoute<RouteProp<Record<string, LoginNeedScreenRouteParams>, string>>();
+
   const video = useRef<Video>(null);
   const navigation = useNavigation<LoginNeedScreenNavigationProp>();
+  const [email, setEmail] = useState("");
+
+  const loginWithEmail = async () => {
+    try {
+      const response = await fetch("http://10.0.2.2:8080/auth/sign-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      if (!response.ok) {
+        throw new Error("로그인 실패");
+      }
+
+      const data = await response.json();
+      const refreshToken = data.refreshToken;
+
+      await AsyncStorage.setItem("refreshToken", refreshToken);
+      Alert.alert("로그인 성공", "환영합니다!");
+      if (route.params?.returnScreen) {
+        const screen = route.params.returnScreen as keyof RootStackParamList;
+        if (screen === "Main") {
+          navigation.replace("Main", { screen: "홈" });
+        } else {
+          navigation.replace(screen);
+        }
+      } else {
+        navigation.replace("Main", { screen: "홈" });
+      }
+    } catch (error) {
+      Alert.alert("로그인 실패", "이메일을 확인해주세요.");
+    }
+  };
 
   useEffect(() => {
     playVideo();
@@ -41,6 +93,23 @@ const LoginNeedScreen = () => {
         <View style={styles.optContainer}>
           <Text style={styles.optText}>OPT</Text>
         </View>
+
+        {/* -------------------임시---------------- */}
+        {/* 이메일 입력창 */}
+        <TextInput
+          style={styles.input}
+          placeholder="이메일을 입력하세요"
+          placeholderTextColor="#888"
+          value={email}
+          onChangeText={setEmail}
+          keyboardType="email-address"
+        />
+        {/* 로그인 버튼 */}
+        <TouchableOpacity style={styles.loginButton} onPress={loginWithEmail}>
+          <Text style={styles.loginButtonText}>로그인</Text>
+        </TouchableOpacity>
+        {/*---------- 여기까지가 임시 ------------*/}
+
         <TouchableOpacity
           style={styles.button}
           onPress={() => navigation.navigate("KakaoLogin")}
@@ -55,7 +124,7 @@ const LoginNeedScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.laterLoginContainer}
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.navigate("Main", { screen: "홈" })}
         >
           <Text style={styles.laterLoginText}>나중에 로그인</Text>
         </TouchableOpacity>
@@ -117,6 +186,28 @@ const styles = StyleSheet.create({
     color: "#888888", // 회색 글자
     fontSize: 16, // 적당한 폰트 크기
     textDecorationLine: "underline", // 밑줄 추가 (선택사항)
+  },
+  input: {
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    width: "80%",
+    padding: 15,
+    borderRadius: 10,
+    marginBottom: 10,
+    fontSize: 16,
+  },
+  loginButton: {
+    backgroundColor: "#4A90E2",
+    paddingVertical: 15,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    width: "80%",
+    alignItems: "center",
+    marginBottom: 10,
+  },
+  loginButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
   },
 });
 

@@ -51,3 +51,6 @@ docker-compose up -d --build
   - TopHeader에서 사용하는 네비게이션과 BottomTabNavigator에서 사용하는 스크린 이름이 다르기 때문
     BottomTabNavigator에서는 "홈"이라고 등록했지만, 이는 Tab 네비게이션의 스크린 이름이고 Stack 네비게이터에서는 이 전체 탭 네비게이터가 "Main"이라는 이름으로 등록되어 있다.
     navigation.navigate('Main', { screen: '홈' }); 라고 수정하고 type 정의를 다시 하며 진행하면 오류가 해결 됨됨
+
+- JSX element class does not support attributes beacuse it does not have a 'props' property
+  - 단순 import 문제, import 잘 확인하기

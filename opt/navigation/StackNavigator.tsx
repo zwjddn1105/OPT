@@ -13,6 +13,7 @@ import AppliedChallengesScreen from "../screens/challenge/AppliedChallengesScree
 import PastChallengesScreen from "../screens/challenge/PastChallengesScreen";
 import ManageChallengeScreen from "../screens/challenge/ManageChallengeScreen";
 import CreateChallengeScreen from "../screens/challenge/CreateChallengeScreen";
+import MyChallengeScreen from "../screens/challenge/MyChallengeScreen";
 
 export type RootStackParamList = {
   Main: undefined;
@@ -29,6 +30,7 @@ export type RootStackParamList = {
   PastChallenges: undefined;
   ManageChallenge: undefined;
   CreateChallenge: undefined;
+  MyChallenge: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -56,6 +58,7 @@ export const StackNavigator = () => {
       <Stack.Screen name="PastChallenges" component={PastChallengesScreen} />
       <Stack.Screen name="ManageChallenge" component={ManageChallengeScreen} />
       <Stack.Screen name="CreateChallenge" component={CreateChallengeScreen} />
+      <Stack.Screen name="MyChallenge" component={MyChallengeScreen} />
     </Stack.Navigator>
   );
 };
