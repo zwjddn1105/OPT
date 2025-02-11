@@ -7,6 +7,8 @@ import {
   StyleSheet,
   Image,
   Animated,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -14,6 +16,8 @@ import { TopHeader } from "../components/TopHeader";
 import PlusButton from '../components/PlusButton';
 import { AddScheduleModal } from '../components/AddScheduleModal';
 import AsyncStorage from "@react-native-async-storage/async-storage";
+
+const { width: WINDOW_WIDTH } = Dimensions.get('window');
 
 interface Schedule {
   id: number;
@@ -286,6 +290,220 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
     }
   };
 
+  // 진행중인 티켓 섹션
+  const renderActiveTickets = () => (
+    <View style={styles.sectionContainer}>
+      <Text style={styles.sectionTitle}>진행중</Text>
+      <FlatList
+        horizontal
+        pagingEnabled
+        nestedScrollEnabled={true}
+        showsHorizontalScrollIndicator={false}
+        data={tickets.filter(ticket => ticket.status === 'active')}
+        renderItem={({ item: ticket }) => (
+          <View style={[
+            styles.card,
+            expandedCard === ticket.id ? styles.cardExpanded : styles.cardCollapsed
+          ]}>
+            <View style={styles.mainContent}>
+              <View style={styles.cardHeader}>
+                <View style={styles.statusContainer}>
+                  <Text style={styles.status}>사용중</Text>
+                </View>
+              </View>
+
+              <View style={styles.cardContent}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: '/api/placeholder/80/80' }}
+                    style={styles.image}
+                  />
+                </View>
+
+                <View style={styles.infoContainer}>
+                  <Text style={styles.ptName}>{ticket.ptName}</Text>
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>세션</Text>
+                    <Text style={styles.value}>{ticket.completedSessions}/{ticket.totalSessions}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>계약일</Text>
+                    <Text style={styles.value}>{ticket.contractDate}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>트레이너</Text>
+                    <Text style={styles.value}>{ticket.trainer}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>회원</Text>
+                    <Text style={styles.value}>{ticket.member}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.cardFooter}>
+              <TouchableOpacity
+                style={styles.historyButton}
+                onPress={() => toggleExpand(ticket.id)}
+              >
+                <View style={styles.historyButtonContent}>
+                  <Text style={styles.historyButtonText}>세션 진행 현황</Text>
+                  <Ionicons 
+                    name={expandedCard === ticket.id ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color="#fff" 
+                  />
+                </View>
+              </TouchableOpacity>
+
+              {expandedCard === ticket.id && (
+                <Animated.View style={[
+                  styles.historyContainer,
+                  {
+                    maxHeight: animationHeight,
+                    overflow: 'hidden',
+                  }
+                ]}>
+                  <ScrollView 
+                    style={styles.historyScroll}
+                    nestedScrollEnabled={true}
+                    scrollEventThrottle={16}  // 스크롤 이벤트 최적화
+                    bounces={false}  // iOS에서 바운스 효과 제거
+                  >
+                    {ticket.sessionHistory.map((session) => (
+                      <View key={session.id} style={styles.historyItem}>
+                        <Text style={styles.sessionNumber}>{session.id}회</Text>
+                        <View style={styles.sessionStatus}>
+                          {session.completed ? (
+                            <>
+                              <Text style={styles.completedText}>완료</Text>
+                              <Text style={styles.sessionDate}>{session.date}</Text>
+                            </>
+                          ) : (
+                            <Text style={styles.pendingText}>예정</Text>
+                          )}
+                        </View>
+                      </View>
+                    ))}
+                  </ScrollView>
+                </Animated.View>
+              )}
+            </View>
+          </View>
+        )}
+        keyExtractor={item => item.id.toString()}
+      />
+    </View>
+  );
+
+  // 종료된 티켓 섹션
+  const renderCompletedTickets = () => (
+    <View style={styles.sectionContainer}>
+      <Text style={styles.sectionTitle}>종료</Text>
+      <FlatList
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        data={tickets.filter(ticket => ticket.status === 'completed')}
+        renderItem={({ item: ticket }) => (
+          <View style={[
+            styles.card,
+            styles.completedCard,
+            expandedCard === ticket.id ? styles.cardExpanded : styles.cardCollapsed
+          ]}>
+            {/* 카드 내용은 active와 동일하되 status만 "종료"로 변경 */}
+            <View style={styles.mainContent}>
+              <View style={styles.cardHeader}>
+                <View style={styles.statusContainer}>
+                  <Text style={styles.status}>종료</Text>
+                </View>
+              </View>
+              <View style={styles.cardContent}>
+                <View style={styles.imageContainer}>
+                  <Image
+                    source={{ uri: '/api/placeholder/80/80' }}
+                    style={styles.image}
+                  />
+                </View>
+
+                <View style={styles.infoContainer}>
+                  <Text style={styles.ptName}>{ticket.ptName}</Text>
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>세션</Text>
+                    <Text style={styles.value}>{ticket.completedSessions}/{ticket.totalSessions}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>계약일</Text>
+                    <Text style={styles.value}>{ticket.contractDate}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>트레이너</Text>
+                    <Text style={styles.value}>{ticket.trainer}</Text>
+                  </View>
+                  <View style={styles.infoRow}>
+                    <Text style={styles.label}>회원</Text>
+                    <Text style={styles.value}>{ticket.member}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.cardFooter}>
+              <TouchableOpacity
+                style={styles.historyButton}
+                onPress={() => toggleExpand(ticket.id)}
+              >
+                <View style={styles.historyButtonContent}>
+                  <Text style={styles.historyButtonText}>세션 진행 현황</Text>
+                  <Ionicons 
+                    name={expandedCard === ticket.id ? "chevron-up" : "chevron-down"} 
+                    size={20} 
+                    color="#fff" 
+                  />
+                </View>
+              </TouchableOpacity>
+
+              {expandedCard === ticket.id && (
+                <Animated.View style={[
+                  styles.historyContainer,
+                  {
+                    maxHeight: animationHeight,
+                    overflow: 'hidden',
+                  }
+                ]}>
+                  <ScrollView 
+                    style={styles.historyScroll}
+                    nestedScrollEnabled={true}
+                    scrollEventThrottle={16}  // 스크롤 이벤트 최적화
+                    bounces={false}  // iOS에서 바운스 효과 제거
+                  >
+                    {ticket.sessionHistory.map((session) => (
+                      <View key={session.id} style={styles.historyItem}>
+                        <Text style={styles.sessionNumber}>{session.id}회</Text>
+                        <View style={styles.sessionStatus}>
+                          {session.completed ? (
+                            <>
+                              <Text style={styles.completedText}>완료</Text>
+                              <Text style={styles.sessionDate}>{session.date}</Text>
+                            </>
+                          ) : (
+                            <Text style={styles.pendingText}>예정</Text>
+                          )}
+                        </View>
+                      </View>
+                    ))}
+                  </ScrollView>
+                </Animated.View>
+              )}  
+            </View>
+          </View>
+        )}
+        keyExtractor={item => item.id.toString()}
+      />
+    </View>
+  );
+
   useEffect(() => {
     loadSchedules();
   }, []);
@@ -360,208 +578,8 @@ export const ManageScreen: React.FC<Props> = ({ navigation, route }) => {
               <PlusButton onPress={handleAddSchedule} />
             </View>
 
-            {/* 진행중인 티켓 섹션 */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>진행중</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.ticketContainer}
-                contentContainerStyle={styles.ticketContent}
-              >
-                {tickets
-                  .filter(ticket => ticket.status === 'active')
-                  .map((ticket) => (
-                    <View key={ticket.id} style={[
-                      styles.card,
-                      expandedCard === ticket.id ? styles.cardExpanded : styles.cardCollapsed
-                    ]}>
-                      <View style={styles.mainContent}>
-                        <View style={styles.cardHeader}>
-                          <View style={styles.statusContainer}>
-                            <Text style={styles.status}>사용중</Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.cardContent}>
-                          <View style={styles.imageContainer}>
-                            <Image
-                              source={{ uri: '/api/placeholder/80/80' }}
-                              style={styles.image}
-                            />
-                          </View>
-
-                          <View style={styles.infoContainer}>
-                            <Text style={styles.ptName}>{ticket.ptName}</Text>
-                            <View style={styles.infoRow}>
-                              <Text style={styles.label}>세션</Text>
-                              <Text style={styles.value}>{ticket.completedSessions}/{ticket.totalSessions}</Text>
-                            </View>
-                            <View style={styles.infoRow}>
-                              <Text style={styles.label}>계약일</Text>
-                              <Text style={styles.value}>{ticket.contractDate}</Text>
-                            </View>
-                            <View style={styles.infoRow}>
-                              <Text style={styles.label}>트레이너</Text>
-                              <Text style={styles.value}>{ticket.trainer}</Text>
-                            </View>
-                            <View style={styles.infoRow}>
-                              <Text style={styles.label}>회원</Text>
-                              <Text style={styles.value}>{ticket.member}</Text>
-                            </View>
-                          </View>
-                        </View>
-                      </View>
-
-                      <View style={styles.cardFooter}>
-                        <TouchableOpacity
-                          style={styles.historyButton}
-                          onPress={() => toggleExpand(ticket.id)}
-                        >
-                          <View style={styles.historyButtonContent}>
-                            <Text style={styles.historyButtonText}>세션 진행 현황</Text>
-                            <Ionicons 
-                              name={expandedCard === ticket.id ? "chevron-up" : "chevron-down"} 
-                              size={20} 
-                              color="#fff" 
-                            />
-                          </View>
-                        </TouchableOpacity>
-
-                        {expandedCard === ticket.id && (
-                          <Animated.View style={[
-                            styles.historyContainer,
-                            {
-                              maxHeight: animationHeight,
-                              overflow: 'hidden',
-                            }
-                          ]}>
-                            <ScrollView style={styles.historyScroll}>
-                              {ticket.sessionHistory.map((session) => (
-                                <View key={session.id} style={styles.historyItem}>
-                                  <Text style={styles.sessionNumber}>{session.id}회</Text>
-                                  <View style={styles.sessionStatus}>
-                                    {session.completed ? (
-                                      <>
-                                        <Text style={styles.completedText}>완료</Text>
-                                        <Text style={styles.sessionDate}>{session.date}</Text>
-                                      </>
-                                    ) : (
-                                      <Text style={styles.pendingText}>예정</Text>
-                                    )}
-                                  </View>
-                                </View>
-                              ))}
-                            </ScrollView>
-                          </Animated.View>
-                        )}
-                      </View>
-                    </View>
-                  ))}
-              </ScrollView>
-            </View>
-
-            {/* 종료된 티켓 섹션 */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>종료</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.ticketContainer}
-                contentContainerStyle={styles.ticketContent}
-              >
-                {tickets
-                  .filter(ticket => ticket.status === 'completed')
-                  .map((ticket) => (
-                    <View key={ticket.id} style={[
-                      styles.card,
-                      styles.completedCard,
-                      expandedCard === ticket.id ? styles.cardExpanded : styles.cardCollapsed
-                    ]}>
-                      <View style={styles.mainContent}>
-                        <View style={styles.cardHeader}>
-                          <View style={styles.statusContainer}>
-                            <Text style={styles.status}>종료</Text>
-                          </View>
-                        </View>
-
-                        <View style={styles.cardContent}>
-                          <View style={styles.imageContainer}>
-                            <Image
-                              source={{ uri: '/api/placeholder/80/80' }}
-                              style={styles.image}
-                            />
-                          </View>
-
-                          <View style={styles.infoContainer}>
-                            <Text style={styles.ptName}>{ticket.ptName}</Text>
-                            <View style={styles.infoRow}>
-                              <Text style={styles.label}>세션</Text>
-                              <Text style={styles.value}>{ticket.completedSessions}/{ticket.totalSessions}</Text>
-                            </View>
-                            <View style={styles.infoRow}>
-                              <Text style={styles.label}>계약일</Text>
-                              <Text style={styles.value}>{ticket.contractDate}</Text>
-                            </View>
-                            <View style={styles.infoRow}>
-                              <Text style={styles.label}>트레이너</Text>
-                              <Text style={styles.value}>{ticket.trainer}</Text>
-                            </View>
-                            <View style={styles.infoRow}>
-                              <Text style={styles.label}>회원</Text>
-                              <Text style={styles.value}>{ticket.member}</Text>
-                            </View>
-                          </View>
-                        </View>
-                      </View>
-
-                      <View style={styles.cardFooter}>
-                        <TouchableOpacity
-                          style={styles.historyButton}
-                          onPress={() => toggleExpand(ticket.id)}
-                        >
-                          <View style={styles.historyButtonContent}>
-                            <Text style={styles.historyButtonText}>세션 진행 현황</Text>
-                            <Ionicons 
-                              name={expandedCard === ticket.id ? "chevron-up" : "chevron-down"} 
-                              size={20} 
-                              color="#fff" 
-                            />
-                          </View>
-                        </TouchableOpacity>
-
-                        {expandedCard === ticket.id && (
-                          <Animated.View style={[
-                            styles.historyContainer,
-                            {
-                              maxHeight: animationHeight,
-                              overflow: 'hidden',
-                            }
-                          ]}>
-                            <ScrollView style={styles.historyScroll}>
-                              {ticket.sessionHistory.map((session) => (
-                                <View key={session.id} style={styles.historyItem}>
-                                  <Text style={styles.sessionNumber}>{session.id}회</Text>
-                                  <View style={styles.sessionStatus}>
-                                    {session.completed ? (
-                                      <>
-                                        <Text style={styles.completedText}>완료</Text>
-                                        <Text style={styles.sessionDate}>{session.date}</Text>
-                                      </>
-                                    ) : (
-                                      <Text style={styles.pendingText}>예정</Text>
-                                    )}
-                                  </View>
-                                </View>
-                              ))}
-                            </ScrollView>
-                          </Animated.View>
-                        )}
-                      </View>
-                    </View>
-                  ))}
-              </ScrollView>
-            </View>
+            {renderActiveTickets()}
+            {renderCompletedTickets()}
           </View>
         </ScrollView>
       </View>
@@ -686,11 +704,11 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   card: {
-    width: 300,
+    width: WINDOW_WIDTH - 80, // 패딩 고려
     backgroundColor: '#FF6B6B',
     borderRadius: 15,
-    marginRight: 15,
     overflow: 'hidden',
+    marginHorizontal: 20, // 좌우 패딩
   },
   cardCollapsed: {
     height: 250,

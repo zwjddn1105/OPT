@@ -16,6 +16,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 type RootStackParamList = {
   TrainerProfile: undefined;
   Badge: undefined;
+  Setting: undefined;
 };
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -47,6 +48,7 @@ interface TrainerProfile {
     };
   };
   rating: number;
+  interests: string[];
   reviews: Review[];
 }
 
@@ -86,6 +88,7 @@ export const TrainerProfileScreen = () => {
       }
     },
     rating: 4.7,
+    interests: ['스쿼트', '벤치프레스', '빌딩업'],
     reviews: [
       {
         id: '1',
@@ -95,7 +98,7 @@ export const TrainerProfileScreen = () => {
           image: 'user_image_url'
         },
         rating: 4,
-        content: '너무 맞는는 선생님이에요. 컨디션 글러스를 잃은 이후 10년째 이 선생님과 운동중입니다. 다들 추천해요!'
+        content: '너무 맞는 선생님이에요. 컨디션 글러스를 잃은 이후 10년째 이 선생님과 운동중입니다. 다들 추천해요!'
       }
     ]
   };
@@ -113,17 +116,20 @@ export const TrainerProfileScreen = () => {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>{trainer.name}</Text>
           <View style={styles.headerRight}>
-            <TouchableOpacity 
+          <TouchableOpacity 
               style={styles.headerIcon}
-              onPress={() => navigation.navigate('Badge')} // 'Badge'는 네비게이션에 등록된 화면 이름입니다
+              onPress={() => navigation.navigate('Badge')}
             >
               <MaterialIcons name="military-tech" size={24} color="black" />
             </TouchableOpacity>
             <TouchableOpacity style={styles.headerIcon}>
               <Ionicons name="heart-outline" size={24} color="black" />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.headerIcon}>
-              <Ionicons name="share-outline" size={24} color="black" />
+            <TouchableOpacity 
+              style={styles.headerIcon}
+              onPress={() => navigation.navigate('Setting')}
+            >
+              <Ionicons name="settings-outline" size={24} color="black" />
             </TouchableOpacity>
           </View>
         </View>
@@ -132,10 +138,31 @@ export const TrainerProfileScreen = () => {
       <ScrollView style={styles.scrollView}>
         {/* Profile Section */}
         <View style={styles.profileSection}>
-          <Image
-            source={{ uri: '/api/placeholder/120/120' }}
-            style={styles.profileImage}
-          />
+          <View style={styles.profileImageContainer}>
+            <Image
+              source={require("../assets/trainer-placeholder.png")}
+              style={styles.profileImage}
+            />
+            <View style={styles.badgeOverlay} />
+          </View>
+
+          <Text style={styles.profileName}>{trainer.name}</Text>
+
+          <View style={styles.locationContainer}>
+            <Ionicons name="location-outline" size={18} color="#666" />
+            <Text style={styles.locationText}>서울시 강남구</Text>
+          </View>
+
+          <TouchableOpacity style={styles.ratingContainer}>
+            <View style={styles.ratingInner}>
+              <Text style={styles.ratingNumber}>{trainer.rating}</Text>
+              <View style={styles.starsContainer}>
+                {generateStars(trainer.rating)}
+              </View>
+            </View>
+          </TouchableOpacity>
+
+          {/* 팔로워/팔로잉 */}
           <View style={styles.statsContainer}>
             <View style={styles.statItem}>
               <Text style={styles.statNumber}>{trainer.followers}</Text>
@@ -146,12 +173,18 @@ export const TrainerProfileScreen = () => {
               <Text style={styles.statLabel}>팔로잉</Text>
             </View>
           </View>
-          <TouchableOpacity style={styles.followButton}>
-            <Text style={styles.followButtonText}>팔로우</Text>
-          </TouchableOpacity>
+
+          {/* 관심사 태그 */}
+          <View style={styles.interestsContainer}>
+            {trainer.interests.map((interest, index) => (
+              <View key={index} style={styles.interestTag}>
+                <Text style={styles.interestText}>{interest}</Text>
+              </View>
+            ))}
+          </View>
         </View>
 
-        {/* Certification Section */}
+        {/* 자격/학력 섹션 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>자격, 학력 자유로운 폼 (자기소개포함)</Text>
           <Text style={styles.certificationText}>{trainer.certification}</Text>
@@ -290,11 +323,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 20,
   },
-  profileImage: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
+  profileImageContainer: {
+    width: 160,
+    height: 160,
     marginBottom: 16,
+    position: 'relative',
+  },
+  profileImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 60,
+  },
+  badgeOverlay: {
+    position: 'absolute',
+    right: 0,
+    bottom: 0,
+    width: 70,
+    height: 70,
+    borderRadius: 50,
+    backgroundColor: '#E0E0E0',
+    borderWidth: 3,
+    borderColor: '#FFFFFF',
   },
   statsContainer: {
     flexDirection: 'row',
@@ -359,15 +408,20 @@ const styles = StyleSheet.create({
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginLeft: 16,
+    marginBottom: 16,
+  },
+  ratingInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
   },
   ratingNumber: {
-    fontSize: 24,
+    fontSize: 16,
     fontWeight: 'bold',
-    marginRight: 8,
   },
   starsContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
   },
   reviewItem: {
     marginBottom: 16,
@@ -458,6 +512,48 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  badgeText: {
+    marginLeft: 4,
+    fontSize: 14,
+    color: '#666',
+  },
+  interestsContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  interestTag: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+  },
+  interestText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  profileName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+    gap: 4,
+  },
+  locationText: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 14, // 텍스트의 lineHeight를 아이콘 크기와 동일하게 설정
   },
 });
 

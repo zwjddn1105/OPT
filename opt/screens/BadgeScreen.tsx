@@ -46,7 +46,7 @@ type BadgeScreenProps = {
         >
           <MaterialCommunityIcons
             name="chevron-left"
-            size={30}
+            size={32}
             color="#000000"
           />
         </TouchableOpacity>
@@ -99,12 +99,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     },
   header: {
-    height: 44,
+    height: 50,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#EEEEEE',
+    paddingHorizontal: 13,
   },
   backButton: {
     padding: 4,

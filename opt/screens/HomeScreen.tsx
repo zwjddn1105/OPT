@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   View,
   Text,
@@ -6,12 +6,20 @@ import {
   StyleSheet,
   ScrollView,
   Image,
+  Dimensions,
+  FlatList,
+  ViewToken,
+  ImageBackground,
 } from "react-native";
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TopHeader } from "../components/TopHeader";
+
+const { width: WINDOW_WIDTH } = Dimensions.get('window');
+const CARD_WIDTH = WINDOW_WIDTH;
+const AUTO_SCROLL_INTERVAL = 3000; // 3초마다 자동 슬라이드
 
 type RootStackParamList = {
   Home: undefined;
@@ -26,21 +34,26 @@ type HomeScreenNavigationProp = NativeStackNavigationProp<
   "Home"
 >;
 
-const ChallengeCard = () => (
-  <View style={styles.card}>
-    <Image
-      source={require("../assets/challenge-placeholder.png")}
-      style={styles.cardImage}
-      defaultSource={require("../assets/challenge-placeholder.png")}
-    />
-
-    <View style={styles.cardContent}>
-      <Text style={styles.cardTitle}>X-CHALLENGE SEOUL</Text>
-      <Text style={styles.cardDescription}>서울시 청년 도전 지원사업</Text>
-      <Text style={styles.cardPeriod}>2024.01.01 ~ 2024.12.31</Text>
-    </View>
-  </View>
-);
+const CHALLENGE_DATA = [
+  {
+    id: 1,
+    title: 'X-CHALLENGE SEOUL',
+    description: '서울시 청년 도전 지원사업',
+    period: '2024.01.01 ~ 2024.12.31',
+  },
+  {
+    id: 2,
+    title: 'SUMMER BODY CHALLENGE',
+    description: '여름맞이 바디 챌린지',
+    period: '2024.05.01 ~ 2024.06.30',
+  },
+  {
+    id: 3,
+    title: 'POWER LIFTING',
+    description: '파워리프팅 기록 도전',
+    period: '2024.03.01 ~ 2024.08.31',
+  },
+];
 
 const TrainerCard = () => (
   <View style={styles.trainerCard}>
@@ -140,6 +153,13 @@ const TodaySchedule: React.FC<{ schedule: Schedule }> = ({ schedule }) => {
   );
 };
 
+interface ChallengeItem {
+  id: number;
+  title: string;
+  description: string;
+  period: string;
+}
+
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation<HomeScreenNavigationProp>();
   const [selectedSpecialty, setSelectedSpecialty] = useState("다이어트");
@@ -147,8 +167,46 @@ const HomeScreen: React.FC = () => {
   const [streak, setStreak] = useState(0);
   const [weeklyWorkouts, setWeeklyWorkouts] = useState<string[]>([]);
   const [todaySchedules, setTodaySchedules] = useState<Schedule[]>([]);
+  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
+  const [isScrolling, setIsScrolling] = useState(false);
+
+  const flatListRef = useRef<FlatList<ChallengeItem>>(null);
+  const viewabilityConfig = useRef({
+    viewAreaCoveragePercentThreshold: 50,
+    minimumViewTime: 0,
+  }).current;
+
+  const onViewableItemsChanged = useRef(({ viewableItems }: {
+    viewableItems: Array<ViewToken>;
+    changed: Array<ViewToken>;
+  }) => {
+    if (viewableItems[0]) {
+      setCurrentChallengeIndex(viewableItems[0].index ?? 0);
+    }
+  }).current;
 
   const specialties = ["다이어트", "빌크업", "필라테스", "체형교정"];
+
+  // 자동 스크롤 설정
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout;
+    
+    if (!isScrolling) {
+      intervalId = setInterval(() => {
+        const nextIndex = (currentChallengeIndex + 1) % CHALLENGE_DATA.length;
+        flatListRef.current?.scrollToIndex({
+          index: nextIndex,
+          animated: true,
+        });
+      }, AUTO_SCROLL_INTERVAL);
+    }
+  
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [currentChallengeIndex, isScrolling]);
 
   const calculateWorkoutStats = async () => {
     try {
@@ -197,28 +255,28 @@ const HomeScreen: React.FC = () => {
 
   const loadTodaySchedules = async () => {
     try {
-        const schedulesStr = await AsyncStorage.getItem('schedules');
-        if (schedulesStr) {
-            const allSchedules: Schedule[] = JSON.parse(schedulesStr);
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+      const schedulesStr = await AsyncStorage.getItem('schedules');
+      if (schedulesStr) {
+        const allSchedules: Schedule[] = JSON.parse(schedulesStr);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
 
-            const todaySchedules = allSchedules
-                .filter((schedule: Schedule) => {
-                    const scheduleDate = new Date(schedule.startTime);
-                    scheduleDate.setHours(0, 0, 0, 0);
-                    return scheduleDate.getTime() === today.getTime();
-                })
-                .sort((a: Schedule, b: Schedule) => {
-                    const timeA = new Date(a.startTime).getTime();
-                    const timeB = new Date(b.startTime).getTime();
-                    return timeA - timeB;
-                });
+        const todaySchedules = allSchedules
+          .filter((schedule: Schedule) => {
+            const scheduleDate = new Date(schedule.startTime);
+            scheduleDate.setHours(0, 0, 0, 0);
+            return scheduleDate.getTime() === today.getTime();
+          })
+          .sort((a: Schedule, b: Schedule) => {
+            const timeA = new Date(a.startTime).getTime();
+            const timeB = new Date(b.startTime).getTime();
+            return timeA - timeB;
+          });
 
-            setTodaySchedules(todaySchedules);
-        }
+        setTodaySchedules(todaySchedules);
+      }
     } catch (error) {
-        console.error('Failed to load today schedules:', error);
+      console.error('Failed to load today schedules:', error);
     }
   };
 
@@ -227,6 +285,59 @@ const HomeScreen: React.FC = () => {
       calculateWorkoutStats();
       loadTodaySchedules();
     }, [])
+  );
+
+  const renderChallengeSection = () => (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>진행중인 챌린지</Text>
+      <View style={styles.carouselContainer}>
+        <FlatList
+          ref={flatListRef}
+          data={CHALLENGE_DATA}
+          horizontal
+          pagingEnabled
+          showsHorizontalScrollIndicator={false}
+          onScrollBeginDrag={() => setIsScrolling(true)}
+          onScrollEndDrag={() => setIsScrolling(false)}
+          viewabilityConfig={viewabilityConfig}
+          onViewableItemsChanged={onViewableItemsChanged}
+          getItemLayout={(_, index) => ({
+            length: CARD_WIDTH,
+            offset: CARD_WIDTH * index,
+            index,
+          })}
+          renderItem={({ item }) => (
+            <View style={styles.challengeCard}>
+              <ImageBackground
+                source={require("../assets/challenge-placeholder.png")}
+                style={styles.challengeCardImage}
+                defaultSource={require("../assets/challenge-placeholder.png")}
+              >
+                <View style={styles.challengeOverlay}>
+                  <View style={styles.challengeCardContent}>
+                    <Text style={styles.challengeCardTitle}>{item.title}</Text>
+                    <Text style={styles.challengeCardDescription}>{item.description}</Text>
+                    <Text style={styles.challengeCardPeriod}>{item.period}</Text>
+                  </View>
+                </View>
+              </ImageBackground>
+            </View>
+          )}
+          keyExtractor={item => item.id.toString()}
+        />
+        <View style={styles.dotContainer}>
+          {CHALLENGE_DATA.map((_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.dot,
+                index === currentChallengeIndex && styles.activeDot,
+              ]}
+            />
+          ))}
+        </View>
+      </View>
+    </View>
   );
 
   const renderTrainerSection = () => (
@@ -265,7 +376,6 @@ const HomeScreen: React.FC = () => {
       <View style={styles.container}>
         <TopHeader />
         <ScrollView style={styles.mainContent}>
-          {/* 오늘의 일정 섹션 */}
           {todaySchedules.length > 0 && (
             <View style={styles.todaySchedulesSection}>
               <Text style={styles.todaySchedulesTitle}>
@@ -313,20 +423,7 @@ const HomeScreen: React.FC = () => {
             </View>
           </View>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>진행중인 챌린지</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.scrollContent}
-            >
-              <ChallengeCard />
-              <ChallengeCard />
-              <ChallengeCard />
-              <ChallengeCard />
-              <ChallengeCard />
-            </ScrollView>
-          </View>
+          {renderChallengeSection()}
 
           <View style={styles.section}>
             <View style={styles.trainerHeader}>
@@ -396,46 +493,71 @@ const styles = StyleSheet.create({
   specialtyButtonTextSelected: {
     color: "#fff",
   },
-  card: {
-    width: 300,
-    marginHorizontal: 5,
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    borderWidth: 1,
-    borderColor: "#E5E5E5",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 2.84,
-    elevation: 3,
+  // 챌린지 캐러셀 스타일
+  carouselContainer: {
+    marginTop: 15,
   },
-  cardImage: {
-    width: "100%",
-    height: 150,
-    borderTopLeftRadius: 15,
-    borderTopRightRadius: 15,
-    backgroundColor: "#f0f0f0",
+  challengeScrollContent: {
+    paddingHorizontal: 0,
+   },
+  challengeCard: {
+    width: CARD_WIDTH,
+    height: 250, // 카드 높이 조정
+    backgroundColor: '#fff',
   },
-  cardContent: {
-    padding: 15,
+  challengeCardImage: {
+    width: '100%',
+    height: '100%',
+    justifyContent: 'flex-end', // 텍스트를 이미지 하단에 배치
   },
-  cardTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginBottom: 5,
+  challengeOverlay: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.4)', // 반투명한 오버레이
   },
-  cardDescription: {
+  challengeCardContent: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 20,
+  },
+  challengeCardTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  challengeCardDescription: {
+    fontSize: 16,
+    color: '#fff',
+    marginBottom: 8,
+  },
+  challengeCardPeriod: {
     fontSize: 14,
-    color: "#666",
-    marginBottom: 5,
+    color: '#fff',
   },
-  cardPeriod: {
-    fontSize: 12,
-    color: "#888",
+  dotContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 15,
   },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#ddd',
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: '#000',
+    width: 24,
+  },
+  // 트레이너 카드 스타일
   trainerCard: {
     width: 300,
     marginHorizontal: 5,
@@ -500,7 +622,6 @@ const styles = StyleSheet.create({
   tabButtonTextSelected: {
     color: "#000",
   },
-
   workoutStatsSection: {
     backgroundColor: "#f8f8f8",
     padding: 20,
