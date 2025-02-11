@@ -55,16 +55,15 @@ const ExerciseRecordForm = ({ exercise, onBack, onClose, onSave, selectedDate }:
   const repsRef = useRef<TextInput>(null);
 
   const handleNumberInput = (value: string, setter: (value: string) => void) => {
-    // 숫자만 허용하는 정규식
     const numbersOnly = value.replace(/[^0-9]/g, '');
     setter(numbersOnly);
   };
 
-  // 저장 버튼 활성화 여부 확인
-  const isSaveEnabled = minutes.length > 0;
-
   const handleSave = async () => {
-    if (!minutes) return; // 운동 시간이 없으면 저장하지 않음
+    if (!minutes.trim()) {
+      minutesRef.current?.focus();
+      return;
+    }
 
     try {
       const record = {
@@ -178,11 +177,7 @@ const ExerciseRecordForm = ({ exercise, onBack, onClose, onSave, selectedDate }:
                 value={reps}
                 onChangeText={(value) => handleNumberInput(value, setReps)}
                 returnKeyType="done"
-                onSubmitEditing={() => {
-                  if (isSaveEnabled) {
-                    handleSave();
-                  }
-                }}
+                onSubmitEditing={handleSave}
               />
               <Text style={styles.inputUnit}>횟수</Text>
             </View>
@@ -193,17 +188,10 @@ const ExerciseRecordForm = ({ exercise, onBack, onClose, onSave, selectedDate }:
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
-            style={[
-              styles.saveButton, 
-              !isSaveEnabled && styles.saveButtonDisabled
-            ]}
+            style={styles.saveButton}
             onPress={handleSave}
-            disabled={!isSaveEnabled}
           >
-            <Text style={[
-              styles.saveButtonText,
-              !isSaveEnabled && styles.saveButtonTextDisabled
-            ]}>저장</Text>
+            <Text style={styles.saveButtonText}>저장</Text>
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
@@ -242,6 +230,7 @@ const ExerciseModal = ({ visible, onClose, onSave, selectedDate }: ExerciseModal
         useNativeDriver: false,
       }).start();
       setSelectedExercise(null);  // 모달이 닫힐 때 선택된 운동 초기화
+      setSearchText('');
     }
   }, [visible]);
 
