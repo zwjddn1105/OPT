@@ -1,4 +1,3 @@
-// MyChallengeScreen.tsx
 import React, { useState, useEffect } from "react";
 import {
   View,
@@ -10,24 +9,54 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
-import { Ionicons } from "@expo/vector-icons";
-import { Switch } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TopHeader } from "../../components/TopHeader";
 
 type RootStackParamList = {
-  LoginNeedScreen: undefined;
+  LoginNeedScreen: { returnScreen: string } | undefined;
   OngoingChallenges: undefined;
   AppliedChallenges: undefined;
   PastChallenges: undefined;
   ManageChallenge: undefined;
+  MyChallengeScreen: undefined;
 };
 
 const MyChallengeScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [isEnabled, setIsEnabled] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
   const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
+
+  useEffect(() => {
+    const checkLoginStatus = async () => {
+      try {
+        const refreshToken = await AsyncStorage.getItem("refreshToken");
+        setIsLoggedIn(refreshToken !== null);
+      } catch (error) {
+        console.error("Error checking login status:", error);
+        setIsLoggedIn(false);
+      }
+    };
+
+    checkLoginStatus();
+  }, []);
+
+  useEffect(() => {
+    if (isLoggedIn === false) {
+      navigation.replace("LoginNeedScreen", {
+        returnScreen: "MyChallenge",
+      });
+    }
+  }, [isLoggedIn, navigation]);
+
+  if (isLoggedIn === null) {
+    return (
+      <View>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
 
   const renderSectionHeader = (
     title: string,
@@ -84,103 +113,26 @@ const MyChallengeScreen = () => {
             </View>
           </TouchableOpacity>
         </View>
-        {/* 진행중인 챌린지 섹션 */}
         <View style={styles.section}>
           {renderSectionHeader("내가 진행중인 챌린지", "OngoingChallenges")}
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <View key={index} style={styles.challengeCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-                  <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
-                </View>
-                <View style={styles.cardContent}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>모집기간</Text>
-                    <Text style={styles.infoValue}>
-                      2024.01.01 ~ 2024.12.31
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원대상</Text>
-                    <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원내용</Text>
-                    <Text style={styles.infoValue}>
-                      활동지원금 최대 300만원
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+          ></ScrollView>
         </View>
-
-        {/* 신청한 챌린지 섹션 */}
         <View style={styles.section}>
           {renderSectionHeader("내가 신청한 챌린지", "AppliedChallenges")}
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <View key={index} style={styles.challengeCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-                  <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
-                </View>
-                <View style={styles.cardContent}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>모집기간</Text>
-                    <Text style={styles.infoValue}>
-                      2024.01.01 ~ 2024.12.31
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원대상</Text>
-                    <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원내용</Text>
-                    <Text style={styles.infoValue}>
-                      활동지원금 최대 300만원
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+          ></ScrollView>
         </View>
-
-        {/* 참여했던 챌린지 섹션 */}
         <View style={styles.section}>
           {renderSectionHeader("내가 참여했던 챌린지", "PastChallenges")}
-          <ScrollView horizontal={true} showsHorizontalScrollIndicator={false}>
-            {Array.from({ length: 3 }).map((_, index) => (
-              <View key={index} style={styles.challengeCard}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-                  <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
-                </View>
-                <View style={styles.cardContent}>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>모집기간</Text>
-                    <Text style={styles.infoValue}>
-                      2024.01.01 ~ 2024.12.31
-                    </Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원대상</Text>
-                    <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
-                  </View>
-                  <View style={styles.infoRow}>
-                    <Text style={styles.infoLabel}>지원내용</Text>
-                    <Text style={styles.infoValue}>
-                      활동지원금 최대 300만원
-                    </Text>
-                  </View>
-                </View>
-              </View>
-            ))}
-          </ScrollView>
+          <ScrollView
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+          ></ScrollView>
         </View>
       </ScrollView>
     </SafeAreaView>

@@ -1,3 +1,4 @@
+// ManageChallengeScreen.tsx
 import React, { useState } from "react";
 import {
   View,
@@ -17,11 +18,42 @@ type RootStackParamList = {
   CreateChallenge: undefined;
 };
 
+type Challenge = {
+  id: string;
+  title: string;
+  subtitle: string;
+  recruitmentPeriod: string;
+  targetAudience: string;
+  support: string;
+};
+
 const ManageChallengesScreen = () => {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false); // 확인 모달 상태
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
+    null
+  );
+  const [challenges, setChallenges] = useState<Challenge[]>([
+    {
+      id: "1",
+      title: "서울시 청년도전 지원사업",
+      subtitle: "X-CHALLENGE SEOUL",
+      recruitmentPeriod: "2024.01.01 ~ 2024.12.31",
+      targetAudience: "만 19세 ~ 39세 청년",
+      support: "활동지원금 최대 300만원",
+    },
+    {
+      id: "2",
+      title: "환경보호 챌린지",
+      subtitle: "SAVE THE EARTH",
+      recruitmentPeriod: "2024.03.01 ~ 2024.06.30",
+      targetAudience: "전 연령",
+      support: "환경보호 키트 제공",
+    },
+    // 추가 더미 데이터...
+  ]);
 
   const renderSectionHeader = (title: string) => (
     <View style={styles.sectionHeader}>
@@ -29,41 +61,53 @@ const ManageChallengesScreen = () => {
     </View>
   );
 
-  const openModal = (challenge: any) => {
+  const openModal = (challenge: Challenge) => {
     setSelectedChallenge(challenge);
     setModalVisible(true);
   };
 
-  const renderChallengeCard = (challenge: any, index: any) => (
+  const deleteChallenge = () => {
+    if (selectedChallenge) {
+      setChallenges((prevChallenges) =>
+        prevChallenges.filter(
+          (challenge) => challenge.id !== selectedChallenge.id
+        )
+      );
+      setConfirmModalVisible(false);
+      setModalVisible(false);
+    }
+  };
+
+  const renderChallengeCard = (challenge: Challenge, index: number) => (
     <TouchableOpacity
-      key={index}
+      key={challenge.id}
       style={styles.challengeCard}
       onPress={() => openModal(challenge)}
     >
       <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>서울시 청년도전 지원사업</Text>
-        <Text style={styles.cardSubtitle}>X-CHALLENGE SEOUL</Text>
+        <Text style={styles.cardTitle}>{challenge.title}</Text>
+        <Text style={styles.cardSubtitle}>{challenge.subtitle}</Text>
       </View>
       <View style={styles.cardContent}>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>모집기간</Text>
-          <Text style={styles.infoValue}>2024.01.01 ~ 2024.12.31</Text>
+          <Text style={styles.infoValue}>{challenge.recruitmentPeriod}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>지원대상</Text>
-          <Text style={styles.infoValue}>만 19세 ~ 39세 청년</Text>
+          <Text style={styles.infoValue}>{challenge.targetAudience}</Text>
         </View>
         <View style={styles.infoRow}>
           <Text style={styles.infoLabel}>지원내용</Text>
-          <Text style={styles.infoValue}>활동지원금 최대 300만원</Text>
+          <Text style={styles.infoValue}>{challenge.support}</Text>
         </View>
       </View>
     </TouchableOpacity>
   );
 
-  const renderModal = () => (
+  const renderMainModal = () => (
     <Modal
-      animationType="slide"
+      animationType="fade"
       transparent={true}
       visible={modalVisible}
       onRequestClose={() => setModalVisible(false)}
@@ -82,8 +126,7 @@ const ManageChallengesScreen = () => {
           <TouchableOpacity
             style={[styles.modalButton, styles.deleteButton]}
             onPress={() => {
-              // 삭제 로직
-              setModalVisible(false);
+              setConfirmModalVisible(true); // 확인 모달 열기
             }}
           >
             <Text style={styles.modalButtonText}>챌린지 삭제하기</Text>
@@ -94,6 +137,36 @@ const ManageChallengesScreen = () => {
           >
             <Text style={styles.closeButtonText}>닫기</Text>
           </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+
+  const renderConfirmModal = () => (
+    <Modal
+      animationType="fade"
+      transparent={true}
+      visible={confirmModalVisible}
+      onRequestClose={() => setConfirmModalVisible(false)}
+    >
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContent, styles.confirmContent]}>
+          <Text style={styles.confirmMessage}>챌린지를 삭제하시겠습니까?</Text>
+
+          <View style={styles.confirmButtons}>
+            <TouchableOpacity
+              style={[styles.confirmButton, styles.deleteButton]}
+              onPress={() => deleteChallenge()}
+            >
+              <Text style={styles.confirmButtonText}>삭제</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.confirmButton, styles.cancelButton]}
+              onPress={() => setConfirmModalVisible(false)}
+            >
+              <Text style={styles.confirmButtonText}>닫기</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
     </Modal>
@@ -122,13 +195,15 @@ const ManageChallengesScreen = () => {
         <View style={styles.section}>
           {renderSectionHeader("내가 오픈 예정인 챌린지")}
           <View style={styles.cardContainer}>
-            {Array.from({ length: 3 }).map((_, index) =>
-              renderChallengeCard(_, index)
+            {challenges.map((challenge, index) =>
+              renderChallengeCard(challenge, index)
             )}
           </View>
         </View>
       </ScrollView>
-      {renderModal()}
+
+      {renderMainModal()}
+      {renderConfirmModal()}
     </SafeAreaView>
   );
 };
@@ -262,6 +337,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+    width: 300,
   },
   modalButton: {
     backgroundColor: "#0C508B",
@@ -280,12 +356,43 @@ const styles = StyleSheet.create({
     backgroundColor: "#FF0000",
   },
   closeButton: {
-    marginTop: 10,
+    borderWidth: 1,
+    borderColor: "#0C508B",
+    borderRadius: 10,
+    padding: 10,
+    alignItems: "center",
+    width: 200,
   },
   closeButtonText: {
     color: "#0C508B",
     fontWeight: "bold",
   },
+  confirmContent: {
+    alignItems: "center",
+  },
+  confirmMessage: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  confirmButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  confirmButton: {
+    flex: 1,
+    padding: 10,
+    borderRadius: 5,
+    marginHorizontal: 5,
+  },
+  cancelButton: {
+    backgroundColor: "#999",
+  },
+  confirmButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    textAlign: "center",
+  },
 });
-
 export default ManageChallengesScreen;
