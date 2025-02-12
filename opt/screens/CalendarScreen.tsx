@@ -13,7 +13,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import PlusButton from "../components/PlusButton";
-import ExerciseModal from "../components/ExerciseModal";
+import ExerciseModal from "../components/ExerciseModal/index";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TopHeader } from "../components/TopHeader";
 interface ExerciseRecord {
@@ -434,5 +434,3 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
 });
-
-export default CalendarScreen;

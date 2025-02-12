@@ -49,9 +49,16 @@ const LoginNeedScreen: React.FC = () => {
       }
 
       const data = await response.json();
-      const refreshToken = data.refreshToken;
+      console.log(data)
+      const { accessToken, refreshToken, nickname } = data;
 
-      await AsyncStorage.setItem("refreshToken", refreshToken);
+      // 모든 필요한 데이터 저장
+      await Promise.all([
+        AsyncStorage.setItem("token", accessToken),       // API 호출용 토큰
+        AsyncStorage.setItem("refreshToken", refreshToken),
+        AsyncStorage.setItem("nickname", nickname)        // 필요하다면 닉네임도 저장
+      ]);
+
       Alert.alert("로그인 성공", "환영합니다!");
       if (route.params?.returnScreen) {
         const screen = route.params.returnScreen as keyof RootStackParamList;

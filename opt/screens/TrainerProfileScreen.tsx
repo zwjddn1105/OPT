@@ -553,7 +553,7 @@ const styles = StyleSheet.create({
   locationText: {
     fontSize: 14,
     color: '#666',
-    lineHeight: 14, // 텍스트의 lineHeight를 아이콘 크기와 동일하게 설정
+    lineHeight: 19, // 텍스트의 lineHeight를 아이콘 크기와 동일하게 설정
   },
 });
 

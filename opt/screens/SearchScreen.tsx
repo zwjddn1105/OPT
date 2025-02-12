@@ -460,7 +460,7 @@ const SearchScreen = () => {
                 {sortOptions.find((opt) => opt.id === selectedSort)?.label ||
                   "추천순"}
               </Text>
-              <Text style={{ color: "#666", fontSize: 16 }}>↑↓</Text>
+              <Text style={styles.arrowText}>↑↓</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -519,11 +519,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     paddingHorizontal: 15,
-    paddingTop: 50,
-    paddingBottom: 10,
+    paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
-    zIndex: 999,
+    zIndex: 1,  // zIndex 조정
   },
   categoryButton: {
     flexDirection: "row",
@@ -532,6 +531,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     borderRadius: 4,
     backgroundColor: "#f5f5f5",
+    position: 'relative',  // 추가
+    zIndex: 2,  // 상위 zIndex
   },
   categoryText: {
     fontSize: 14,
@@ -667,15 +668,21 @@ const styles = StyleSheet.create({
   },
   categoryDropdown: {
     position: "absolute",
-    top: "100%",
+    top: 36,  // 버튼 높이에 맞춰 조정
     left: 0,
     width: "100%",
     backgroundColor: "#fff",
     borderWidth: 1,
     borderColor: "#eee",
     borderRadius: 4,
-    zIndex: 999,
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   categoryDropdownItem: {
     padding: 10,
@@ -891,6 +898,12 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  arrowText: {
+    color: "#666",
+    fontSize: 16,
+    marginLeft: 4,
+    letterSpacing: -6, // 화살표 사이 간격을 좁힘
   },
 });
 export default SearchScreen;
