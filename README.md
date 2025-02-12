@@ -54,3 +54,5 @@ docker-compose up -d --build
 
 - JSX element class does not support attributes beacuse it does not have a 'props' property
   - 단순 import 문제, import 잘 확인하기
+
+-
