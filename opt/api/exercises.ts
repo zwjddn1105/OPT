@@ -1,3 +1,4 @@
+// api/exercises.ts
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ServerResponse, Exercise, FetchExercisesResult } from '../types/exercise';
 

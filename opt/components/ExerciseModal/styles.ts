@@ -1,4 +1,3 @@
-// components/ExerciseModal/styles.ts
 import { StyleSheet } from 'react-native';
 
 export const styles = StyleSheet.create({
@@ -232,5 +231,69 @@ export const styles = StyleSheet.create({
   },
   contentContainer: {
     flex: 1,
+  },
+  // 미디어 관련 새로운 스타일
+  mediaSection: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  mediaSectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  mediaSectionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  mediaCount: {
+    fontSize: 14,
+    color: '#666',
+  },
+  mediaPreviewContainer: {
+    flexDirection: 'row',
+    paddingVertical: 10,
+  },
+  mediaPreview: {
+    width: 100,
+    height: 100,
+    marginRight: 10,
+    borderRadius: 8,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  mediaPreviewImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  removeMediaButton: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderRadius: 12,
+    padding: 2,
+  },
+  videoIndicator: {
+    position: 'absolute',
+    bottom: 5,
+    right: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+    borderRadius: 12,
+    padding: 4,
+  },
+  addMediaButton: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
   },
 });
